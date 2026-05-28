@@ -30,11 +30,14 @@ $data = json_decode(file_get_contents('php://input'), true) ?? [];
 $request = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
-if (preg_match('/\/auth\/login/', $request) && $method === 'POST') {
+if (preg_match('/\/api\/auth\/login/', $request) && $method === 'POST') {
     include __DIR__ . '/routes/authentification.php';
 }
-elseif (preg_match('/\/courses/', $request) && $method === 'GET') {
-    include __DIR__ . '/routes/cours.php';
+elseif (preg_match('/\/api\/cours/', $request) && $method === 'GET') {
+    require __DIR__ . '/routes/cours.php';
+}
+elseif (preg_match('/\/api\/cours/', $request) && $method === 'POST') {
+    require __DIR__ . '/routes/cours.php';
 }
 
 ?>

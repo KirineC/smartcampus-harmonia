@@ -10,7 +10,7 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post('/authentification', {
+      const response = await api.post('/auth/login', {
         action: 'login',
         email,
         password

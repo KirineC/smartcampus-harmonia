@@ -1,8 +1,7 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    
-    if ($data['action'] === 'login') {
+    if (isset($data['action']) && $data['action'] === 'login' && isset($data['email']) && isset($data['password'])) {
+        
         $userModel = new Utilisateur($pdo);
         $user = $userModel->login($data['email'], $data['password']);
         

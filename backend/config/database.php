@@ -3,12 +3,12 @@ class Database {
     private $host = 'localhost';
     private $db_name = 'harmonia_conservatoire';
     private $user = 'root';
-    private $password = '';
+    private $password = 'root'; // Mot de passe MAMP pour Mac
 
     public function connect() {
         try {
             $pdo = new PDO(
-                'mysql:host=' . $this->host . ';dbname=' . $this->db_name,
+                'mysql:host=' . $this->host . ';dbname=' . $this->db_name . ';charset=utf8mb4',
                 $this->user,
                 $this->password
             );

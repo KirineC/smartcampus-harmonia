@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /smartcampus-harmonia/backend/
+
+# Si le fichier ou le dossier existe vraiment, on le laisse passer
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^.*$ - [L]
+
+# Sinon, on envoie tout vers index.php
+RewriteRule ^api/(.*)$ index.php [QSA,L]

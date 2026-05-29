@@ -1,722 +1,222 @@
-
-
-.planning-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #f4f4f2 0%, #fafaf8 100%);
+/* Conteneur global */
+.harmonia-art-wrapper {
+  background-color: #fcfbfa; /* Blanc ivoire identique au Login/Catalogue */
+  color: #111111;
   min-height: 100vh;
+  padding: 60px 40px;
+  font-family: 'Georgia', serif; /* Unification de la police de base */
 }
 
-.planning-container.loading {
+.conservatoire-loading {
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 18px;
-  color: #6B46C1;
-  font-weight: 500;
-}
-
-
-
-.planning-header {
-  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
-  border-radius: 15px;
-  padding: 30px;
-  margin-bottom: 30px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 10px 30px rgba(107, 70, 193, 0.2);
-}
-
-.header-content h1 {
-  font-size: 36px;
-  font-family: 'Playfair Display', serif;
-  margin: 0;
-  margin-bottom: 5px;
-}
-
-.header-content .subtitle {
-  color: #D4A574;
-  font-size: 14px;
-  margin: 0;
-}
-
-.header-stats {
-  display: flex;
-  gap: 30px;
-}
-
-.stat {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 32px;
-  font-weight: 700;
-  color: #D4A574;
-}
-
-.stat-label {
-  display: block;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* =============================================
-   DAY SECTIONS
-   ============================================= */
-
-.planning-schedule {
-  display: grid;
-  gap: 25px;
-}
-
-.day-section {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  border-left: 5px solid #6B46C1;
-}
-
-.day-header {
-  background: linear-gradient(90deg, #6B46C1 0%, #8B1E3F 100%);
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  color: white;
-}
-
-.day-icon {
-  font-size: 28px;
-}
-
-.day-header h2 {
-  margin: 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  flex-grow: 1;
-}
-
-.course-count {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-/* =============================================
-   COURSES LIST
-   ============================================= */
-
-.courses-list {
-  padding: 15px;
-  display: grid;
-  gap: 12px;
-}
-
-.course-item {
-  display: grid;
-  grid-template-columns: 80px 1fr 150px;
-  gap: 15px;
-  align-items: center;
-  padding: 15px;
-  background: #f9f9f7;
-  border-radius: 10px;
-  border-left: 3px solid #D4A574;
-  transition: all 0.3s ease;
-}
-
-.course-item:hover {
-  background: #f0f0ee;
-  transform: translateX(5px);
-  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
-}
-
-/* Time Block */
-.time-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
-  color: white;
-  border-radius: 8px;
-  padding: 10px 0;
-  font-weight: 700;
-}
-
-.start-time {
-  font-size: 20px;
-}
-
-.duration {
-  font-size: 11px;
-  opacity: 0.8;
-}
-
-/* Course Content */
-.course-content {
-  padding-left: 10px;
-}
-
-.course-title {
-  margin: 0 0 8px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2D3142;
-  font-family: 'Playfair Display', serif;
-}
-
-.course-meta {
-  display: flex;
-  gap: 15px;
-  font-size: 12px;
+  height: 100vh;
+  font-family: 'Georgia', serif;
+  font-style: italic;
   color: #666;
 }
 
-.meta-item {
+/* En-tête Typographique Style Prestige */
+.art-header {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 2px solid #d4af37; /* 🪙 La touche d'Or en ligne de séparation */
+  padding-bottom: 25px;
+  margin-bottom: 50px;
 }
 
-/* Status Badges */
-.course-status {
-  text-align: center;
+.sc-tag {
+  font-family: sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #888;
+  display: block;
+  margin-bottom: 10px;
 }
 
-.badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
+.main-art-title {
+  font-size: 36px;
+  font-weight: normal;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.student-signature {
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  color: #555;
+  font-style: italic;
+  margin: 5px 0 0 0;
+}
+
+/* Bouton Minimaliste de Luxe Or & Noir */
+.minimal-btn {
+  background: #111111;
+  color: #ffffff;
+  border: none;
+  border-radius: 2px;
+  padding: 12px 24px;
+  font-family: sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.minimal-btn:hover {
+  background-color: #d4af37; /* Devient Or au survol */
+}
+
+/* Structure en Portée Musicale */
+.partition-stream {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.measure-row {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  border-bottom: 1px solid #e5e4e0;
+  padding: 35px 0;
+}
+
+.measure-row:last-child {
+  border-bottom: none;
+}
+
+/* Colonne Jour */
+.measure-day {
+  font-size: 24px;
+  font-weight: normal;
+  margin: 0 0 5px 0;
+  letter-spacing: 0.5px;
+}
+
+.measure-tempo-indicator {
+  font-family: sans-serif;
   font-size: 11px;
-  font-weight: 600;
+  color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.badge-validated {
-  background: #d4edda;
-  color: #155724;
-}
-
-.badge-pending {
-  background: #fff3cd;
-  color: #856404;
-}
-
-/* =============================================
-   EMPTY STATE
-   ============================================= */
-
-.empty-state {
-  text-align: center;
-  padding: 60px 30px;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-.empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
-  display: block;
-}
-
-.empty-state h2 {
-  font-size: 24px;
-  color: #2D3142;
-  margin: 0 0 10px 0;
-  font-family: 'Playfair Display', serif;
-}
-
-.empty-state p {
-  color: #666;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.no-courses-day {
-  padding: 25px;
-  text-align: center;
-  color: #999;
-  font-style: italic;
-  font-size: 14px;
-}
-
-/* =============================================
-   BUTTONS
-   ============================================= */
-
-.btn-primary,
-.btn-secondary {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  font-family: 'Inter', sans-serif;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(107, 70, 193, 0.3);
-}
-
-.btn-secondary {
-  background: white;
-  color: #6B46C1;
-  border: 2px solid #6B46C1;
-}
-
-.btn-secondary:hover {
-  background: #f9f9f7;
-  transform: translateY(-2px);
-}
-
-/* =============================================
-   FOOTER
-   ============================================= */
-
-.planning-footer {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 30px;
-  padding-top: 30px;
-}
-
-/* =============================================
-   ERROR ALERT
-   ============================================= */
-
-.error-alert {
-  background: #f8d7da;
-  color: #721c24;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 4px solid #f5c6cb;
-}
-
-/* =============================================
-   RESPONSIVE
-   ============================================= */
-
-@media (max-width: 768px) {
-  .planning-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
-  }
-
-  .header-stats {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .course-item {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .time-block {
-    flex-direction: row;
-    justify-content: space-around;
-    gap: 10px;
-  }
-
-  .planning-footer {
-    flex-direction: column;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    width: 100%;
-  }
-
-  .day-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-
-  .day-header h2 {
-    margin: 10px 0 0 0;
-  }
-}/* =============================================
-   MONPLANNING - STYLES HARMONIA
-   ============================================= */
-
-.planning-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #f4f4f2 0%, #fafaf8 100%);
-  min-height: 100vh;
-}
-
-.planning-container.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #6B46C1;
-  font-weight: 500;
-}
-
-/* =============================================
-   HEADER
-   ============================================= */
-
-.planning-header {
-  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
-  border-radius: 15px;
-  padding: 30px;
-  margin-bottom: 30px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 10px 30px rgba(107, 70, 193, 0.2);
-}
-
-.header-content h1 {
-  font-size: 36px;
-  font-family: 'Playfair Display', serif;
-  margin: 0;
-  margin-bottom: 5px;
-}
-
-.header-content .subtitle {
-  color: #D4A574;
-  font-size: 14px;
-  margin: 0;
-}
-
-.header-stats {
-  display: flex;
-  gap: 30px;
-}
-
-.stat {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 32px;
-  font-weight: 700;
-  color: #D4A574;
-}
-
-.stat-label {
-  display: block;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* =============================================
-   DAY SECTIONS
-   ============================================= */
-
-.planning-schedule {
-  display: grid;
-  gap: 25px;
-}
-
-.day-section {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  border-left: 5px solid #6B46C1;
-}
-
-.day-header {
-  background: linear-gradient(90deg, #6B46C1 0%, #8B1E3F 100%);
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  color: white;
-}
-
-.day-icon {
-  font-size: 28px;
-}
-
-.day-header h2 {
-  margin: 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  flex-grow: 1;
-}
-
-.course-count {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-/* =============================================
-   COURSES LIST
-   ============================================= */
-
-.courses-list {
-  padding: 15px;
-  display: grid;
-  gap: 12px;
-}
-
-.course-item {
-  display: grid;
-  grid-template-columns: 80px 1fr 150px;
-  gap: 15px;
-  align-items: center;
-  padding: 15px;
-  background: #f9f9f7;
-  border-radius: 10px;
-  border-left: 3px solid #D4A574;
-  transition: all 0.3s ease;
-}
-
-.course-item:hover {
-  background: #f0f0ee;
-  transform: translateX(5px);
-  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
-}
-
-/* Time Block */
-.time-block {
+/* Liste des cours */
+.measure-staff {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+}
+
+.empty-measure-text {
+  color: #aaa;
+  font-style: italic;
+  font-size: 14px;
+  padding-top: 8px;
+}
+
+/* Un élément cours (Ligne épurée) */
+.staff-node {
+  display: grid;
+  grid-template-columns: 140px 1fr 120px;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
-  color: white;
-  border-radius: 8px;
-  padding: 10px 0;
-  font-weight: 700;
+  padding: 18px 25px;
+  background-color: #ffffff;
+  border: 1px solid #e5e4e0;
+  border-radius: 2px;
+  transition: transform 0.2s, border-color 0.2s;
 }
 
-.start-time {
-  font-size: 20px;
+.staff-node:hover {
+  border-color: #d4af37; /* 🪙 S'illumine en Or au survol comme le catalogue */
+  transform: translateX(4px);
 }
 
-.duration {
-  font-size: 11px;
-  opacity: 0.8;
-}
-
-/* Course Content */
-.course-content {
-  padding-left: 10px;
-}
-
-.course-title {
-  margin: 0 0 8px 0;
-  font-size: 16px;
+.node-time {
+  font-family: sans-serif;
+  font-size: 14px;
   font-weight: 600;
-  color: #2D3142;
-  font-family: 'Playfair Display', serif;
+  color: #111;
 }
 
-.course-meta {
-  display: flex;
-  gap: 15px;
-  font-size: 12px;
-  color: #666;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-/* Status Badges */
-.course-status {
-  text-align: center;
-}
-
-.badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
+.node-title {
+  font-size: 18px;
+  font-weight: normal;
+  margin: 0 0 6px 0;
   letter-spacing: 0.5px;
 }
 
-.badge-validated {
-  background: #d4edda;
-  color: #155724;
+.node-sub {
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #555;
+  margin: 0;
 }
 
-.badge-pending {
-  background: #fff3cd;
-  color: #856404;
+.node-sub strong {
+  color: #111;
 }
 
-/* =============================================
-   EMPTY STATE
-   ============================================= */
-
-.empty-state {
-  text-align: center;
-  padding: 60px 30px;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+.node-sub .separator {
+  margin: 0 8px;
+  color: #ccc;
 }
 
-.empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
-  display: block;
+/* Badges de Statuts Discrets */
+.node-status {
+  text-align: right;
 }
 
-.empty-state h2 {
-  font-size: 24px;
-  color: #2D3142;
-  margin: 0 0 10px 0;
-  font-family: 'Playfair Display', serif;
-}
-
-.empty-state p {
-  color: #666;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.no-courses-day {
-  padding: 25px;
-  text-align: center;
-  color: #999;
-  font-style: italic;
-  font-size: 14px;
-}
-
-
-
-.btn-primary,
-.btn-secondary {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
+.status-dot {
+  font-family: sans-serif;
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
   font-weight: 600;
-  cursor: pointer;
+  border-radius: 2px;
+}
+
+.status-dot.approved {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.status-dot.pending {
+  background-color: #fef7e0;
+  color: #b06000;
+}
+
+/* Alertes */
+.art-error {
+  background-color: #fff5f5;
+  color: #c53030;
+  padding: 15px;
   font-size: 14px;
-  transition: all 0.3s ease;
-  font-family: 'Inter', sans-serif;
+  margin-bottom: 30px;
+  border-left: 2px solid #c53030;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(107, 70, 193, 0.3);
-}
-
-.btn-secondary {
-  background: white;
-  color: #6B46C1;
-  border: 2px solid #6B46C1;
-}
-
-.btn-secondary:hover {
-  background: #f9f9f7;
-  transform: translateY(-2px);
-}
-
-
-
-.planning-footer {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 30px;
-  padding-top: 30px;
-}
-
-
-.error-alert {
-  background: #f8d7da;
-  color: #721c24;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 4px solid #f5c6cb;
-}
-
-
-
+/* Mode Mobile */
 @media (max-width: 768px) {
-  .planning-header {
+  .art-header {
     flex-direction: column;
-    text-align: center;
+    align-items: flex-start;
     gap: 20px;
   }
-
-  .header-stats {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .course-item {
+  .measure-row {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 20px;
+    padding: 25px 0;
   }
-
-  .time-block {
-    flex-direction: row;
-    justify-content: space-around;
-    gap: 10px;
+  .staff-node {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
-
-  .planning-footer {
-    flex-direction: column;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    width: 100%;
-  }
-
-  .day-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-
-  .day-header h2 {
-    margin: 10px 0 0 0;
+  .node-status {
+    text-align: left;
   }
 }

@@ -10,32 +10,21 @@ export default function MonPlanning() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Icons pour chaque jour
-  const dayIcons = {
-    1: '🌙',  // Lundi
-    2: '🎻',  // Mardi
-    3: '🎹',  // Mercredi
-    4: '🎺',  // Jeudi
-    5: '🎸',  // Vendredi
-    6: '🎼',  // Samedi
-    0: '⭐'   // Dimanche
-  };
-
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
+  // 🔐 Authentification réelle restaurée
   useEffect(() => {
     const checkAuth = () => {
       const userData = localStorage.getItem('user');
       if (!userData) {
-        navigate('/login');
+        navigate('/'); // Renvoie au Login si pas connecté
         return;
       }
       const userObj = JSON.parse(userData);
       setUser(userObj);
       
-      // Vérifier que c'est un étudiant
       if (userObj.role !== 'etudiant') {
-        setError('Accès réservé aux étudiants');
+        setError('Accès réservé aux membres de l’Académie.');
         return;
       }
     };
@@ -43,188 +32,122 @@ export default function MonPlanning() {
     checkAuth();
   }, [navigate]);
 
+  // 🔄 Récupération des cours via le PHP
   useEffect(() => {
     const fetchInscriptions = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/inscriptions');
+        const response = await api.get('/index.php?mes_inscriptions=1');
         
         if (Array.isArray(response.data)) {
-          // Trier par jour puis heure
           const sorted = response.data.sort((a, b) => {
-            if (a.jour_semaine !== b.jour_semaine) {
-              return a.jour_semaine - b.jour_semaine;
-            }
+            if (a.jour_semaine !== b.jour_semaine) return a.jour_semaine - b.jour_semaine;
             return a.heure_debut.localeCompare(b.heure_debut);
           });
           setInscriptions(sorted);
-        } else {
-          setInscriptions([]);
         }
       } catch (err) {
-        console.error('Erreur chargement inscriptions:', err);
-        setError('Impossible de charger votre planning');
+        console.error(err);
+        setError('Le registre des partitions est momentanément inaccessible.');
       } finally {
         setLoading(false);
       }
     };
 
-    if (user) {
-      fetchInscriptions();
-    }
+    if (user) fetchInscriptions();
   }, [user]);
 
-  // Grouper par jour
-  const groupByDay = () => {
-    const grouped = {};
-    inscriptions.forEach(ins => {
-      const day = ins.jour_semaine || 1;
-      if (!grouped[day]) grouped[day] = [];
-      grouped[day].push(ins);
-    });
-    return grouped;
+  // Regroupement des cours par jour
+  const groupedCourses = inscriptions.reduce((acc, current) => {
+    const day = current.jour_semaine || 1;
+    if (!acc[day]) acc[day] = [];
+    acc[day].push(current);
+    return acc;
+  }, {});
+
+  // Fonction pour calculer le temps total de cours par jour (En heures)
+  const calculateDailyTempo = (courses) => {
+    if (!courses) return 0;
+    return courses.reduce((total, c) => {
+      const duration = (new Date(`1970-01-01T${c.heure_fin}`) - new Date(`1970-01-01T${c.heure_debut}`)) / 3600000;
+      return total + duration;
+    }, 0).toFixed(1);
   };
 
-  const groupedCourses = groupByDay();
+  const formatTime = (time) => time ? time.substring(0, 5).replace(':', 'h') : '?';
 
-  // Badge statut
-  const getStatusBadge = (statut) => {
-    if (statut === 'Validée') {
-      return <span className="badge badge-validated">✓ Validée</span>;
-    } else {
-      return <span className="badge badge-pending">⏳ En attente</span>;
-    }
-  };
-
-  // Format heure (14:00:00 → 14h00)
-  const formatTime = (time) => {
-    if (!time) return '?';
-    return time.substring(0, 5).replace(':', 'h');
-  };
-
-  if (loading) {
-    return (
-      <div className="planning-container loading">
-        <p>Chargement de votre planning... 🎵</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="conservatoire-loading">Chargement de votre pupitre...</div>;
 
   return (
-    <div className="planning-container">
-      {/* Header */}
-      <header className="planning-header">
-        <div className="header-content">
-          <h1>🎼 Mon Planning</h1>
-          <p className="subtitle">Bienvenue, {user?.prenom} 🎹</p>
+    <div className="harmonia-art-wrapper">
+      {/* Grand En-tête Haute Couture */}
+      <header className="art-header">
+        <div className="brand-block">
+          <span className="sc-tag">SMARTCAMPUS // HARMONIA</span>
+          <h1 className="main-art-title">Mon Registre d'Études</h1>
+          <p className="student-signature">Pupitre virtuel de {user?.prenom} — Session Académique</p>
         </div>
-        <div className="header-stats">
-          <div className="stat">
-            <span className="stat-number">{inscriptions.length}</span>
-            <span className="stat-label">Cours inscrits</span>
-          </div>
-          <div className="stat">
-            <span className="stat-number">
-              {inscriptions.filter(i => i.statut_inscription === 'Validée').length}
-            </span>
-            <span className="stat-label">Validés</span>
-          </div>
+        <div className="quick-actions">
+          <button className="minimal-btn" onClick={() => navigate('/catalogue')}>
+            + Solliciter une Masterclass
+          </button>
         </div>
       </header>
 
-      {error && <div className="error-alert">{error}</div>}
+      {error && <div className="art-error">{error}</div>}
 
-      {/* Planning */}
-      {inscriptions.length === 0 ? (
-        <div className="empty-state">
-          <p className="empty-icon">🎭</p>
-          <h2>Aucun cours inscrit</h2>
-          <p>Commencez par explorer le catalogue pour vous inscrire à des cours!</p>
-          <button 
-            className="btn-primary"
-            onClick={() => navigate('/catalogue')}
-          >
-            Voir le catalogue →
-          </button>
-        </div>
-      ) : (
-        <div className="planning-schedule">
-          {/* Affichage par jour */}
-          {[1, 2, 3, 4, 5].map(dayNum => (
-            <div key={dayNum} className="day-section">
-              {/* Header jour */}
-              <div className="day-header">
-                <span className="day-icon">{dayIcons[dayNum]}</span>
-                <h2 className="day-name">{dayNames[dayNum]}</h2>
-                <span className="course-count">
-                  {groupedCourses[dayNum]?.length || 0} cours
+      {/* Liste Chronologique Style Partition */}
+      <main className="partition-stream">
+        {[1, 2, 3, 4, 5].map(dayNum => {
+          const dailyCourses = groupedCourses[dayNum] || [];
+          const tempoHours = calculateDailyTempo(dailyCourses);
+
+          return (
+            <div key={dayNum} className="measure-row">
+              {/* Colonne de gauche : Le Jour et son "Tempo" */}
+              <div className="measure-meta">
+                <h2 className="measure-day">{dayNames[dayNum]}</h2>
+                <span className="measure-tempo-indicator">
+                  Tempo : {tempoHours}h de pratique
                 </span>
               </div>
 
-              {/* Cours du jour */}
-              <div className="courses-list">
-                {groupedCourses[dayNum] ? (
-                  groupedCourses[dayNum].map(cours => (
-                    <div key={cours.id} className="course-item">
-                      {/* Temps */}
-                      <div className="time-block">
-                        <span className="start-time">
-                          {formatTime(cours.heure_debut)}
+              {/* Colonne de droite : Les lignes de portée (Cours) */}
+              <div className="measure-staff">
+                {dailyCourses.length === 0 ? (
+                  <div className="empty-measure-text">Silence — Aucune répétition programmée.</div>
+                ) : (
+                  dailyCourses.map(cours => (
+                    <div key={cours.id} className="staff-node">
+                      {/* Heure */}
+                      <div className="node-time">
+                        {formatTime(cours.heure_debut)} — {formatTime(cours.heure_fin)}
+                      </div>
+
+                      {/* Infos de la discipline */}
+                      <div className="node-details">
+                        <h3 className="node-title">{cours.titre}</h3>
+                        <p className="node-sub">
+                          <span>🏛️ Lieu : <strong>{cours.nom_salle || 'Studio libre'}</strong></span>
+                          <span className="separator">•</span>
+                          <span>👨‍🏫 Maître : <strong>Pr. {cours.prof_nom}</strong></span>
+                        </p>
+                      </div>
+
+                      {/* Statut Élégant */}
+                      <div className="node-status">
+                        <span className={`status-dot ${cours.statut_inscription === 'Validée' ? 'approved' : 'pending'}`}>
+                          {cours.statut_inscription === 'Validée' ? 'Confirmé' : 'En attente'}
                         </span>
-                        {cours.heure_fin && (
-                          <span className="duration">
-                            {formatTime(cours.heure_fin)}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Contenu cours */}
-                      <div className="course-content">
-                        <h3 className="course-title">{cours.titre}</h3>
-                        <div className="course-meta">
-                          <span className="meta-item">
-                            📍 <strong>Salle</strong>
-                          </span>
-                          <span className="meta-item">
-                            👨‍🏫 <strong>Prof</strong>
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Statut */}
-                      <div className="course-status">
-                        {getStatusBadge(cours.statut_inscription)}
                       </div>
                     </div>
                   ))
-                ) : (
-                  <div className="no-courses-day">
-                    <p>Pas de cours ce jour</p>
-                  </div>
                 )}
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Footer actions */}
-      {inscriptions.length > 0 && (
-        <footer className="planning-footer">
-          <button 
-            className="btn-secondary"
-            onClick={() => navigate('/catalogue')}
-          >
-            ➕ Ajouter un cours
-          </button>
-          <button 
-            className="btn-secondary"
-            onClick={() => navigate('/dashboard')}
-          >
-            ← Retour tableau de bord
-          </button>
-        </footer>
-      )}
+          );
+        })}
+      </main>
     </div>
   );
 }

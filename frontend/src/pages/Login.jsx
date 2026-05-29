@@ -21,6 +21,11 @@ export default function Login() {
       });
 
       if (response.data.success) {
+        // 🎯 AJOUT CRUCIAL : On stocke les infos de l'étudiant renvoyées par ton PHP
+        // response.data.user doit contenir au moins { prenom: "...", role: "etudiant" }
+        localStorage.setItem('user', JSON.stringify(response.data.user || { prenom: "Étudiant", role: "etudiant" }));
+        
+        // Redirection vers le catalogue
         navigate('/catalogue');
       } else {
         setError(response.data.error || "Identifiants académiques invalides.");
@@ -29,6 +34,7 @@ export default function Login() {
       console.error(err);
       setError("Le secrétariat numérique est indisponible actuellement.");
     }
+    
   };
 
   return (

@@ -45,15 +45,15 @@ export default function CatalogueCours() {
           <div key={cours.id} className="course-card">
             <h3>{cours.titre}</h3>
             <p>Professeur : {cours.prof_nom}</p>
-            <p>Places : {cours.places_occupées} / {cours.capacite_max}</p>
+            <p>Places : {cours.places_occupees} / {cours.capacite_max}</p>
             
             {/* Bouton grisé si le cours est complet d'après la règle métier */}
             <button 
               onClick={() => handleInscription(cours.id)}
-              disabled={cours.places_occupées >= cours.capacite_max}
-              className={cours.places_occupées >= cours.capacite_max ? "btn-disabled" : "btn-active"}
+              disabled={cours.places_occupees >= cours.capacite_max}
+              className={cours.places_occupees >= cours.capacite_max ? "btn-disabled" : "btn-active"}
             >
-              {cours.places_occupées >= cours.capacite_max ? "Complet" : "S'inscrire"}
+              {cours.places_occupees >= cours.capacite_max ? "Complet" : "S'inscrire"}
             </button>
           </div>
         ))}

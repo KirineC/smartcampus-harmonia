@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/models/Utilisateur.php';
 require_once __DIR__ . '/models/Cours.php'; 
+require_once __DIR__ . '/models/Inscription.php';
 
 // 3. Initialisation de la base de données et de la session
 $db = new Database();
@@ -46,16 +47,23 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // 5. Aiguillage des routes (Le Routeur)
 
-// --- ROUTE AUTHENTIFICATION ---
-if ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
+// --- 1. ROUTE INSCRIPTIONS (À mettre en haut car très spécifique) ---
+if ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['cours_id'])) {
+    include __DIR__ . '/routes/inscriptions.php';
+}
+// --- 2. ROUTE GET INSCRIPTIONS (Ta super idée pour voir ses cours) ---
+elseif ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.php') && $method === 'GET' && isset($_GET['mes_inscriptions'])) { 
+    include __DIR__ . '/routes/inscriptions.php';
+}
+// --- 3. ROUTE AUTHENTIFICATION ---
+elseif ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
     include __DIR__ . '/routes/authentification.php';
 }
-// --- ROUTE COURS (GET : Lire les cours) ---
-// On accepte si l'URL contient /api/cours OU si on tape directement sur index.php SANS action de login
+// --- 4. ROUTE COURS (GET) ---
 elseif ((preg_match('/\/api\/cours/', $request) || $request === '/index.php') && $method === 'GET') {
     require __DIR__ . '/routes/cours.php';
 }
-// --- ROUTE COURS (POST : Créer un cours) ---
+// --- 5. ROUTE COURS (POST) ---
 elseif ((preg_match('/\/api\/cours/', $request) || $request === '/index.php') && $method === 'POST') {
     require __DIR__ . '/routes/cours.php';
 }

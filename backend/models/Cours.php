@@ -6,13 +6,17 @@ class Cours {
         $this->pdo = $pdo;
     }
     
-    // Récupérer tous les cours
     public function getAll() {
         $stmt = $this->pdo->prepare("
-            SELECT c.*, u.prenom, u.nom as prof_nom, s.nom_salle
+            SELECT 
+                c.*, 
+                u.prenom, 
+                u.nom as prof_nom, 
+                s.nom_salle,
+                (SELECT COUNT(*) FROM inscriptions i WHERE i.cours_id = c.id AND i.statut_inscription = 'Validée') as places_occupees -- 👈 JOINTURE MAGIQUE POUR LE REACT
             FROM cours c
             JOIN enseignants e ON c.enseignant_id = e.id
-            JOIN utilisateurs u ON e.utilisateur_id = u.id -- 👈 On passe par la table utilisateurs
+            JOIN utilisateurs u ON e.utilisateur_id = u.id
             JOIN salles s ON c.salle_id = s.id
             ORDER BY c.jour_semaine, c.heure_debut
         ");

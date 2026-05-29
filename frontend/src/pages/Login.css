@@ -1,0 +1,115 @@
+/* Conteneur principal plein écran */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backgroundColor: #fcfbfa; /* Fond crème */
+  font-family: 'Georgia', serif;
+}
+
+/* La carte du formulaire */
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 30px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border-top: 4px solid #d4af37; /* Touche d'Or */
+  box-sizing: border-box;
+}
+
+/* Titre Harmonia */
+.login-title {
+  font-size: 26px;
+  color: #111111;
+  margin: 0 0 10px 0;
+  font-weight: normal;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* Sous-titre Conservatoire */
+.login-subtitle {
+  font-size: 12px;
+  color: #888888;
+  font-style: italic;
+  margin: 0;
+  text-align: center;
+}
+
+/* Bloc d'erreur */
+.login-error {
+  background-color: #fff5f5;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  border-left: 3px solid #c53030;
+  text-align: center;
+}
+
+/* Groupes d'inputs */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group-last {
+  margin-bottom: 25px;
+}
+
+/* Labels */
+.login-label {
+  display: block;
+  font-size: 13px;
+  color: #444444;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* Champs de saisie textuels */
+.login-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  font-size: 14px;
+  font-family: sans-serif;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-input:focus {
+  border-color: #d4af37; /* L'input devient or quand on clique dessus */
+}
+
+/* Bouton d'action */
+.login-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #111111;
+  color: #ffffff;
+  border: none;
+  border-radius: 2px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-transform: uppercase;
+}
+
+.login-button:hover {
+  background-color: #333333; /* Changement de couleur au survol */
+}
+
+/* Mention de sécurité en bas */
+.login-footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 11px;
+  color: #aaaaaaaa;
+  letter-spacing: 0.5px;
+}

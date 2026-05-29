@@ -1,0 +1,722 @@
+
+
+.planning-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f4f4f2 0%, #fafaf8 100%);
+  min-height: 100vh;
+}
+
+.planning-container.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #6B46C1;
+  font-weight: 500;
+}
+
+
+
+.planning-header {
+  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(107, 70, 193, 0.2);
+}
+
+.header-content h1 {
+  font-size: 36px;
+  font-family: 'Playfair Display', serif;
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+.header-content .subtitle {
+  color: #D4A574;
+  font-size: 14px;
+  margin: 0;
+}
+
+.header-stats {
+  display: flex;
+  gap: 30px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  color: #D4A574;
+}
+
+.stat-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* =============================================
+   DAY SECTIONS
+   ============================================= */
+
+.planning-schedule {
+  display: grid;
+  gap: 25px;
+}
+
+.day-section {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border-left: 5px solid #6B46C1;
+}
+
+.day-header {
+  background: linear-gradient(90deg, #6B46C1 0%, #8B1E3F 100%);
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: white;
+}
+
+.day-icon {
+  font-size: 28px;
+}
+
+.day-header h2 {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  flex-grow: 1;
+}
+
+.course-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* =============================================
+   COURSES LIST
+   ============================================= */
+
+.courses-list {
+  padding: 15px;
+  display: grid;
+  gap: 12px;
+}
+
+.course-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 150px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px;
+  background: #f9f9f7;
+  border-radius: 10px;
+  border-left: 3px solid #D4A574;
+  transition: all 0.3s ease;
+}
+
+.course-item:hover {
+  background: #f0f0ee;
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
+}
+
+/* Time Block */
+.time-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-weight: 700;
+}
+
+.start-time {
+  font-size: 20px;
+}
+
+.duration {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Course Content */
+.course-content {
+  padding-left: 10px;
+}
+
+.course-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3142;
+  font-family: 'Playfair Display', serif;
+}
+
+.course-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #666;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Status Badges */
+.course-status {
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-validated {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* =============================================
+   EMPTY STATE
+   ============================================= */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.empty-state h2 {
+  font-size: 24px;
+  color: #2D3142;
+  margin: 0 0 10px 0;
+  font-family: 'Playfair Display', serif;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.no-courses-day {
+  padding: 25px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(107, 70, 193, 0.3);
+}
+
+.btn-secondary {
+  background: white;
+  color: #6B46C1;
+  border: 2px solid #6B46C1;
+}
+
+.btn-secondary:hover {
+  background: #f9f9f7;
+  transform: translateY(-2px);
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+
+.planning-footer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 30px;
+}
+
+/* =============================================
+   ERROR ALERT
+   ============================================= */
+
+.error-alert {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #f5c6cb;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .planning-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .header-stats {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .course-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .time-block {
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 10px;
+  }
+
+  .planning-footer {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .day-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .day-header h2 {
+    margin: 10px 0 0 0;
+  }
+}/* =============================================
+   MONPLANNING - STYLES HARMONIA
+   ============================================= */
+
+.planning-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f4f4f2 0%, #fafaf8 100%);
+  min-height: 100vh;
+}
+
+.planning-container.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #6B46C1;
+  font-weight: 500;
+}
+
+/* =============================================
+   HEADER
+   ============================================= */
+
+.planning-header {
+  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(107, 70, 193, 0.2);
+}
+
+.header-content h1 {
+  font-size: 36px;
+  font-family: 'Playfair Display', serif;
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+.header-content .subtitle {
+  color: #D4A574;
+  font-size: 14px;
+  margin: 0;
+}
+
+.header-stats {
+  display: flex;
+  gap: 30px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  color: #D4A574;
+}
+
+.stat-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* =============================================
+   DAY SECTIONS
+   ============================================= */
+
+.planning-schedule {
+  display: grid;
+  gap: 25px;
+}
+
+.day-section {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border-left: 5px solid #6B46C1;
+}
+
+.day-header {
+  background: linear-gradient(90deg, #6B46C1 0%, #8B1E3F 100%);
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: white;
+}
+
+.day-icon {
+  font-size: 28px;
+}
+
+.day-header h2 {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  flex-grow: 1;
+}
+
+.course-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* =============================================
+   COURSES LIST
+   ============================================= */
+
+.courses-list {
+  padding: 15px;
+  display: grid;
+  gap: 12px;
+}
+
+.course-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 150px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px;
+  background: #f9f9f7;
+  border-radius: 10px;
+  border-left: 3px solid #D4A574;
+  transition: all 0.3s ease;
+}
+
+.course-item:hover {
+  background: #f0f0ee;
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.1);
+}
+
+/* Time Block */
+.time-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-weight: 700;
+}
+
+.start-time {
+  font-size: 20px;
+}
+
+.duration {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Course Content */
+.course-content {
+  padding-left: 10px;
+}
+
+.course-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3142;
+  font-family: 'Playfair Display', serif;
+}
+
+.course-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #666;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Status Badges */
+.course-status {
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-validated {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* =============================================
+   EMPTY STATE
+   ============================================= */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.empty-state h2 {
+  font-size: 24px;
+  color: #2D3142;
+  margin: 0 0 10px 0;
+  font-family: 'Playfair Display', serif;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.no-courses-day {
+  padding: 25px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  font-size: 14px;
+}
+
+
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6B46C1 0%, #8B1E3F 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(107, 70, 193, 0.3);
+}
+
+.btn-secondary {
+  background: white;
+  color: #6B46C1;
+  border: 2px solid #6B46C1;
+}
+
+.btn-secondary:hover {
+  background: #f9f9f7;
+  transform: translateY(-2px);
+}
+
+
+
+.planning-footer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 30px;
+}
+
+
+.error-alert {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #f5c6cb;
+}
+
+
+
+@media (max-width: 768px) {
+  .planning-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .header-stats {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .course-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .time-block {
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 10px;
+  }
+
+  .planning-footer {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .day-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .day-header h2 {
+    margin: 10px 0 0 0;
+  }
+}

@@ -14,6 +14,7 @@ export default function Login() {
     setError('');
 
     try {
+      console.log(api.defaults.baseURL);
       const response = await api.post('/index.php', {
         action: 'login',
         email: email,

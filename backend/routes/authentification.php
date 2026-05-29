@@ -4,6 +4,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $userModel = new Utilisateur($pdo);
         $user = $userModel->login($data['email'], $data['password']);
+        error_log("User found: " . json_encode($user));
+        error_log("Password verify result: " . (password_verify($data['password'], $user['mot_de_passe_chiffre']) ? 'true' : 'false'));
         
         if ($user) {
             $_SESSION['user_id'] = $user['id'];

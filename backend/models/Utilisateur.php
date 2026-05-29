@@ -7,17 +7,18 @@ class Utilisateur {
     }
     
     public function login($email, $password) {
-        $stmt = $this->pdo->prepare("
-            SELECT * FROM utilisateurs WHERE courriel = ?
-        ");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($user && password_verify($password, $user['mot_de_passe_chiffre'])) {
-            return $user;
-        }
-        return false;
+    $stmt = $this->pdo->prepare("
+        SELECT * FROM utilisateurs WHERE courriel = ?
+    ");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // On vérifie que $user existe bien avant de faire le password_verify
+    if ($user && password_verify($password, $user['mot_de_passe_chiffre'])) {
+        return $user;
     }
+    return false;
+}
     
     public function register($email, $password, $role, $prenom, $nom) {
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);

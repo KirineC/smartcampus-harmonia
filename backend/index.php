@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // 2. Inclusions centralisées des fichiers nécessaires
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/models/Utilisateur.php';
+require_once __DIR__ . '/models/Cours.php'; 
 
 // 3. Initialisation de la base de données et de la session
 $db = new Database();
@@ -44,13 +45,18 @@ $request = strtok($request, '?'); // Élimine les paramètres après un "?" si l
 $method = $_SERVER['REQUEST_METHOD'];
 
 // 5. Aiguillage des routes (Le Routeur)
-if ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST') {
+
+// --- ROUTE AUTHENTIFICATION ---
+if ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
     include __DIR__ . '/routes/authentification.php';
 }
-elseif (preg_match('/\/api\/cours/', $request) && $method === 'GET') {
+// --- ROUTE COURS (GET : Lire les cours) ---
+// On accepte si l'URL contient /api/cours OU si on tape directement sur index.php SANS action de login
+elseif ((preg_match('/\/api\/cours/', $request) || $request === '/index.php') && $method === 'GET') {
     require __DIR__ . '/routes/cours.php';
 }
-elseif (preg_match('/\/api\/cours/', $request) && $method === 'POST') {
+// --- ROUTE COURS (POST : Créer un cours) ---
+elseif ((preg_match('/\/api\/cours/', $request) || $request === '/index.php') && $method === 'POST') {
     require __DIR__ . '/routes/cours.php';
 }
 else {

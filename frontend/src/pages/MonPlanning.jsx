@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import '../styles/monplanning.css';
+import './MonPlanning.css';
 
 export default function MonPlanning() {
   const [inscriptions, setInscriptions] = useState([]);

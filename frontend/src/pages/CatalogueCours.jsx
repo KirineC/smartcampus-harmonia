@@ -1,60 +1,76 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import './CatalogueCours.css'; // Import du style épuré
 
 export default function CatalogueCours() {
-  const [courses, setCourses] = useState([]);
-  const [message, setMessage] = useState('');
+  const [cours, setCours] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Charger les cours au démarrage
+  // 🔄 Chargement des cours depuis le PHP au démarrage de la page
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchCours = async () => {
       try {
-        const response = await api.get('/cours');
-        setCourses(response.data);
-      } catch (error) {
-        console.error("Erreur chargement cours", error);
+        const response = await api.get('/index.php');
+        setCours(response.data);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des cours:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchCourses();
+    fetchCours();
   }, []);
 
-  const handleInscription = async (coursId) => {
-    try {
-      const response = await api.post('/inscriptions', { cours_id: coursId });
-      
-      if (response.data.success) {
-        alert("🎉 Inscription validée avec succès !");
-        // Rafraîchir la liste pour mettre à jour les compteurs de places
-        window.location.reload(); 
-      } else {
-        // Affiche le message d'erreur précis renvoyé par le PHP
-        setMessage(response.data.error);
-      }
-    } catch (error) {
-      setMessage("Erreur lors de la communication avec le serveur.");
-    }
-  };
+  // 🔍 Filtrage des cours en temps réel selon ce que tape l'étudiant
+  const coursFiltres = cours.filter(c => 
+    c.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.prof_nom.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Georgia' }}>Chargement du pupitre académique...</div>;
+  }
 
   return (
     <div className="catalogue-container">
-      <h2>Catalogue des cours</h2>
-      {message && <div className="alert-box">{message}</div>}
-      
+      <div className="catalogue-header">
+        <h1>Catalogue des Enseignements</h1>
+        <p style={{ fontStyle: 'italic', color: '#666', fontSize: '14px' }}>Année Académique 2026 — Répétitions & Classes Terminales</p>
+      </div>
+
+      {/* Barre de recherche interactive */}
+      <div className="search-container">
+        <input 
+          type="text" 
+          placeholder="🔍 Rechercher une discipline ou un maître (ex: Piano, Bach...)" 
+          className="search-input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* Grille des cartes de cours */}
       <div className="courses-grid">
-        {courses.map(cours => (
-          <div key={cours.id} className="course-card">
-            <h3>{cours.titre}</h3>
-            <p>Professeur : {cours.prof_nom}</p>
-            <p>Places : {cours.places_occupees} / {cours.capacite_max}</p>
-            
-            {/* Bouton grisé si le cours est complet d'après la règle métier */}
-            <button 
-              onClick={() => handleInscription(cours.id)}
-              disabled={cours.places_occupees >= cours.capacite_max}
-              className={cours.places_occupees >= cours.capacite_max ? "btn-disabled" : "btn-active"}
-            >
-              {cours.places_occupees >= cours.capacite_max ? "Complet" : "S'inscrire"}
-            </button>
+        {coursFiltres.map((c) => (
+          <div key={c.id} className="course-card">
+            <div>
+              <div className="course-type">Cours {c.type_cours} • Semestre {c.semestre}</div>
+              <h2 className="course-title">{c.titre}</h2>
+              
+              <div className="course-info">🎵 Maître de classe : <strong>Pr. {c.prenom} {c.prof_nom}</strong></div>
+              <div className="course-info">🏛️ Lieu : <strong>{c.nom_salle}</strong></div>
+              <div className="course-info">📅 Session : <strong>Jour {c.jour_semaine} • {c.heure_debut.substring(0, 5)} - {c.heure_fin.substring(0, 5)}</strong></div>
+            </div>
+
+            <div>
+              <div className="course-info" style={{ marginTop: '15px', borderTop: '1px dashed #eee', paddingTop: '10px' }}>
+                👥 Places occupées : <strong>{c.places_occupees} / {c.capacite_max}</strong>
+              </div>
+              <button className="register-button">
+                Solliciter une inscription
+              </button>
+            </div>
           </div>
         ))}
       </div>

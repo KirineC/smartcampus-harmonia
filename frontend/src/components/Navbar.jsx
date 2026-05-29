@@ -23,11 +23,28 @@ export default function Navbar() {
       borderBottom: '1px solid #e5e4e0',
       fontFamily: 'Georgia, serif'
     }}>
-      <div style={{ letterSpacing: '2px', fontSize: '18px', cursor: 'pointer' }} onClick={() => navigate('/catalogue')}>
+      {/* 🎼 Clic sur le logo -> Retour au Hub central */}
+      <div 
+        style={{ letterSpacing: '2px', fontSize: '18px', cursor: 'pointer', fontWeight: 'normal' }} 
+        onClick={() => navigate('/dashboard')}
+      >
         H A R M O N I A
       </div>
       
       <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
+        {/* 🏛️ Onglet Tableau de Bord */}
+        <span 
+          onClick={() => navigate('/dashboard')} 
+          style={{
+            cursor: 'pointer',
+            fontSize: '14px',
+            color: location.pathname === '/dashboard' ? '#d4af37' : '#111',
+            fontWeight: location.pathname === '/dashboard' ? 'bold' : 'normal'
+          }}
+        >
+          Tableau de Bord
+        </span>
+
         <span 
           onClick={() => navigate('/catalogue')} 
           style={{
@@ -39,6 +56,7 @@ export default function Navbar() {
         >
           Grand Catalogue
         </span>
+
         <span 
           onClick={() => navigate('/planning')} 
           style={{
@@ -50,6 +68,7 @@ export default function Navbar() {
         >
           Mon Planning
         </span>
+
         <button 
           onClick={handleLogout}
           style={{

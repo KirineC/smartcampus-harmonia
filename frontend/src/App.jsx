@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'; // 🎯 On importe notre menu chic
 import Login from './pages/Login';
 import CatalogueCours from './pages/CatalogueCours';
 import MonPlanning from './pages/MonPlanning';
+import Dashboard from './pages/Dashboard';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/catalogue" element={<CatalogueCours />} />
           <Route path="/planning" element={<MonPlanning />} />
           <Route path="*" element={<Navigate to="/" />} />

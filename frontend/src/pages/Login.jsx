@@ -27,7 +27,7 @@ export default function Login() {
         localStorage.setItem('user', JSON.stringify(response.data.user || { prenom: "Étudiant", role: "etudiant" }));
         
         // Redirection vers le catalogue
-        navigate('/catalogue');
+        navigate('/dashboard');
       } else {
         setError(response.data.error || "Identifiants académiques invalides.");
       }

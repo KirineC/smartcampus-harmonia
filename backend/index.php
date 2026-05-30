@@ -43,8 +43,6 @@ if (json_last_error() !== JSON_ERROR_NONE || !$data) {
 
 // 5. Récupération de la route
 $request = $_SERVER['REQUEST_URI'];
-
-// Nettoyage du chemin du backend
 $request = str_replace('/smartcampus-harmonia/backend', '', $request);
 $request = strtok($request, '?');
 
@@ -57,6 +55,7 @@ $isInscriptions = preg_match('/\/api\/inscriptions/', $request);
 $isAuthLogin = preg_match('/\/api\/auth\/login/', $request);
 $isCours = preg_match('/\/api\/cours/', $request);
 $isEnseignantEleves = preg_match('/\/api\/enseignant_eleves/', $request);
+$isEnseignantActions = preg_match('/\/api\/enseignant/', $request);
 
 // 7. Routeur
 
@@ -95,12 +94,17 @@ elseif (
     include __DIR__ . '/routes/enseignant_eleves.php';
 }
 
-// --- ENSEIGNANT : accepter ou refuser une demande d'inscription ---
+// --- ENSEIGNANT : accepter / refuser / valider / révoquer une inscription ---
 elseif (
-    ($isEnseignantEleves || $isIndex)
+    ($isEnseignantEleves || $isEnseignantActions || $isIndex)
     && $method === 'POST'
     && isset($data['action'])
-    && in_array($data['action'], ['accepter_inscription', 'refuser_inscription'])
+    && in_array($data['action'], [
+        'accepter_inscription',
+        'refuser_inscription',
+        'valider_inscription',
+        'revoquer_inscription'
+    ])
 ) {
     include __DIR__ . '/routes/enseignant_eleves.php';
 }

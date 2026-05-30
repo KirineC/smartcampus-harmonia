@@ -66,7 +66,7 @@ export default function TeacherDashboard() {
         inscription_id: inscriptionId
       });
 
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         setSuccessMsg("✅ L'étudiant a été inscrit officiellement à votre classe.");
         await chargerElevesDuProf(user.id);
       } else {
@@ -80,7 +80,7 @@ export default function TeacherDashboard() {
     }
   };
 
-  const handleSupprimerInscription = async (inscriptionId) => {
+  const handleSupprimerInscription = async (inscriptionId, typeAction = 'refuser') => {
     if (!user) return;
 
     setActionLoading(inscriptionId);
@@ -89,19 +89,24 @@ export default function TeacherDashboard() {
 
     try {
       const response = await api.post('/index.php', {
-        action: 'refuser_inscription',
+        action: typeAction === 'revoquer' ? 'revoquer_inscription' : 'refuser_inscription',
         inscription_id: inscriptionId
       });
 
-      if (response.data.success) {
-        setSuccessMsg("❌ La demande d'inscription a été refusée.");
+      if (response.data && response.data.success) {
+        if (typeAction === 'revoquer') {
+          setSuccessMsg("❌ L'inscription a été révoquée du registre.");
+        } else {
+          setSuccessMsg("❌ La demande d'inscription a été refusée.");
+        }
+
         await chargerElevesDuProf(user.id);
       } else {
-        setErrorMsg(response.data.error || "Refus impossible.");
+        setErrorMsg(response.data.error || "Action impossible.");
       }
     } catch (err) {
       console.error(err);
-      setErrorMsg("Erreur lors du refus de l'inscription.");
+      setErrorMsg("Erreur lors de l'action sur l'inscription.");
     } finally {
       setActionLoading(null);
     }
@@ -247,7 +252,7 @@ export default function TeacherDashboard() {
 
                       <button
                         className="action-btn-delete"
-                        onClick={() => handleSupprimerInscription(et.inscription_id)}
+                        onClick={() => handleSupprimerInscription(et.inscription_id, 'refuser')}
                         disabled={actionLoading === et.inscription_id}
                       >
                         {actionLoading === et.inscription_id ? 'Traitement...' : 'Refuser'}
@@ -312,7 +317,7 @@ export default function TeacherDashboard() {
                     <td>
                       <button
                         className="action-btn-delete"
-                        onClick={() => handleSupprimerInscription(et.inscription_id)}
+                        onClick={() => handleSupprimerInscription(et.inscription_id, 'revoquer')}
                         disabled={actionLoading === et.inscription_id}
                       >
                         {actionLoading === et.inscription_id ? 'Traitement...' : 'Révoquer'}

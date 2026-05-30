@@ -23,6 +23,21 @@ try {
         VALUES (:inscription_id, :valeur, CURDATE(), 'Audition Fin de Semestre', 1)
     ");
 
+    // 🎯 REQUÊTE POUR RÉCUPÉRER LES INFOS DE NOTIFICATION (Cours + Élève)
+    $infoStmt = $pdo->prepare("
+        SELECT e.utilisateur_id, c.titre AS nom_cours
+        FROM inscriptions i
+        JOIN etudiants e ON i.etudiant_id = e.id
+        JOIN cours c ON i.cours_id = c.id
+        WHERE i.id = ?
+    ");
+
+    // 🎯 REQUÊTE POUR INSERER L'ALERTE
+    $notifStmt = $pdo->prepare("
+        INSERT INTO notifications (utilisateur_id, message, lu) 
+        VALUES (?, ?, 0)
+    ");
+
     foreach ($notes_liste as $item) {
         $inscription_id = intval($item['inscription_id']);
         
@@ -47,10 +62,21 @@ try {
                 ':valeur' => $valeur_note
             ]);
         }
+
+        // ============================================================
+        // 🔔 DÉCLENCHEUR DE NOTIFICATIONS AUTOMATIQUES
+        // ============================================================
+        $infoStmt->execute([$inscription_id]);
+        $info = $infoStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($info && !empty($info['utilisateur_id'])) {
+            $msg = "🎵 Une nouvelle note a été attribuée à votre partition de '" . $info['nom_cours'] . "'. Consultez votre livret !";
+            $notifStmt->execute([$info['utilisateur_id'], $msg]);
+        }
     }
 
     $pdo->commit();
-    echo json_encode(['success' => true, 'message' => 'Notes enregistrées avec succès.']);
+    echo json_encode(['success' => true, 'message' => 'Notes enregistrées et étudiants notifiés avec succès.']);
 
 } catch (PDOException $e) {
     if ($pdo->inTransaction()) {

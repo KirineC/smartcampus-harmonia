@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:8889
--- Généré le : sam. 30 mai 2026 à 23:16
+-- Généré le : sam. 30 mai 2026 à 23:25
 -- Version du serveur : 8.0.44
 -- Version de PHP : 8.3.30
 
@@ -254,6 +254,14 @@ CREATE TABLE `notifications` (
   `date_creation` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `utilisateur_id`, `message`, `lu`, `date_creation`) VALUES
+(11, 7, '🎵 Cher Maître, l\'administration a clôturé votre chaire d\'enseignement pour le cours \'Haute Contre et Chant Baroque\'.', 1, '2026-05-30 23:25:05'),
+(12, 3, '⚠️ Le cours auquel vous étiez inscrit (\'Haute Contre et Chant Baroque\') a été révoqué par l\'administration.', 1, '2026-05-30 23:25:05');
+
 -- --------------------------------------------------------
 
 --
@@ -497,7 +505,7 @@ ALTER TABLE `notes`
 -- AUTO_INCREMENT pour la table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT pour la table `reservations_salles`

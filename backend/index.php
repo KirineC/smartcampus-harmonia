@@ -106,7 +106,17 @@ elseif (
         'revoquer_inscription'
     ])
 ) {
-    include __DIR__ . '/routes/enseignant_eleves.php';
+    include __DIR__ . '/routes/enseignant_actions.php';
+}
+
+// --- ENSEIGNANT : publier les notes (Placée avant les cours pour éviter le conflit !) ---
+elseif (
+    ($isIndex || preg_match('/\/api\/enseignant/', $request)) 
+    && $method === 'POST' 
+    && isset($data['action']) 
+    && $data['action'] === 'publier_notes'
+) {
+    include __DIR__ . '/routes/enseignant_notes.php';
 }
 
 // --- AUTHENTIFICATION ---
@@ -137,7 +147,7 @@ elseif (
     require __DIR__ . '/routes/cours.php';
 }
 
-// --- COURS : création d'un cours ---
+// --- COURS : création d'un cours (Placée en dernier car très globale) ---
 elseif (
     ($isCours || $isIndex)
     && $method === 'POST'

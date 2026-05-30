@@ -55,6 +55,10 @@ if ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.php')
 elseif ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.php') && $method === 'GET' && isset($_GET['mes_inscriptions'])) { 
     include __DIR__ . '/routes/inscriptions.php';
 }
+// --- 2.BIS ROUTE GET ÉLÈVES POUR ENSEIGNANT ---
+elseif (($request === '/index.php' || preg_match('/\/api\/enseignant/', $request)) && $method === 'GET' && isset($_GET['liste_eleves_prof'])) { 
+    include __DIR__ . '/routes/enseignant_eleves.php';
+}
 // --- 3. ROUTE AUTHENTIFICATION ---
 elseif ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
     include __DIR__ . '/routes/authentification.php';

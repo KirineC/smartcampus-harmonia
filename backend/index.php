@@ -4,72 +4,97 @@ $allowed_origins = [
     'http://localhost:5173',
     'http://localhost:3000'
 ];
+
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
 if (in_array($origin, $allowed_origins)) {
     header('Access-Control-Allow-Origin: ' . $origin);
 }
+
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Credentials: true');
 header('Content-Type: application/json');
 
-// Gestion de la requête de pré-vérification (OPTIONS)
+// Gestion de la requête de pré-vérification OPTIONS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// 2. Inclusions centralisées des fichiers nécessaires
+// 2. Inclusions centralisées
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/models/Utilisateur.php';
-require_once __DIR__ . '/models/Cours.php'; 
+require_once __DIR__ . '/models/Cours.php';
 require_once __DIR__ . '/models/Inscription.php';
 
-// 3. Initialisation de la base de données et de la session
+// 3. Connexion BDD + session
 $db = new Database();
 $pdo = $db->connect();
 session_start();
 
-// Lecture sécurisée du JSON pour éviter l'erreur 500 si le JSON est mal formé
+// 4. Lecture du JSON envoyé par React
 $json_brut = file_get_contents('php://input');
 $data = json_decode($json_brut, true);
 
 if (json_last_error() !== JSON_ERROR_NONE || !$data) {
-    $data = []; // Si le JSON est invalide, on crée un tableau vide au lieu de crash
+    $data = [];
 }
 
-// 4. Récupération des informations de la requête
+// 5. Récupération de la route
 $request = $_SERVER['REQUEST_URI'];
-// Nettoyage pour MAMP : on supprime le chemin des dossiers pour ne garder que la route de l'API
+
+// Nettoyage du chemin du backend
 $request = str_replace('/smartcampus-harmonia/backend', '', $request);
-$request = strtok($request, '?'); // Élimine les paramètres après un "?" si l'URL en contient
+$request = strtok($request, '?');
+
 $method = $_SERVER['REQUEST_METHOD'];
 
-// 5. Aiguillage des routes (Le Routeur)
+// 6. Routeur
 
-// --- 1. ROUTE INSCRIPTIONS (À mettre en haut car très spécifique) ---
-if ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['cours_id'])) {
+$isIndex = ($request === '/index.php');
+$isInscriptions = preg_match('/\/api\/inscriptions/', $request);
+$isAuthLogin = preg_match('/\/api\/auth\/login/', $request);
+$isCours = preg_match('/\/api\/cours/', $request);
+
+// --- INSCRIPTIONS : inscription à un cours ---
+if (($isInscriptions || $isIndex) && $method === 'POST' && isset($data['cours_id'])) {
     include __DIR__ . '/routes/inscriptions.php';
 }
-// --- 2. ROUTE GET INSCRIPTIONS (Ta super idée pour voir ses cours) ---
-elseif ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.php') && $method === 'GET' && isset($_GET['mes_inscriptions'])) { 
+
+// --- INSCRIPTIONS : annulation d'une inscription ---
+elseif (($isInscriptions || $isIndex) && $method === 'DELETE') {
     include __DIR__ . '/routes/inscriptions.php';
 }
-// --- 3. ROUTE AUTHENTIFICATION ---
-elseif ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
+
+// --- INSCRIPTIONS : voir mes inscriptions ---
+elseif (($isInscriptions || $isIndex) && $method === 'GET' && isset($_GET['mes_inscriptions'])) {
+    include __DIR__ . '/routes/inscriptions.php';
+}
+
+// --- AUTHENTIFICATION ---
+elseif (($isAuthLogin || $isIndex) && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
     include __DIR__ . '/routes/authentification.php';
 }
-// --- 4. ROUTE COURS (GET) ---
-elseif ((preg_match('/\/api\/cours/', $request) || $request === '/index.php') && $method === 'GET') {
+
+// --- COURS : récupération des cours ---
+elseif (($isCours || $isIndex) && $method === 'GET') {
     require __DIR__ . '/routes/cours.php';
 }
-// --- 5. ROUTE COURS (POST) ---
-elseif ((preg_match('/\/api\/cours/', $request) || $request === '/index.php') && $method === 'POST') {
+
+// --- COURS : création d'un cours ---
+elseif (($isCours || $isIndex) && $method === 'POST') {
     require __DIR__ . '/routes/cours.php';
 }
+
+// --- ROUTE NON TROUVÉE ---
 else {
-    // Si aucune route ne correspond
     http_response_code(404);
-    echo json_encode(['error' => 'Route non trouvee', 'uri' => $request]);
+    echo json_encode([
+        'error' => 'Route non trouvee',
+        'uri' => $request,
+        'method' => $method,
+        'data' => $data
+    ]);
 }
 ?>

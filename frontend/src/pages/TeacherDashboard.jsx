@@ -54,7 +54,6 @@ export default function TeacherDashboard() {
     setSuccessMsg('');
 
     try {
-      // Fusion : On accepte le format d'action de ton coéquipier si son PHP l'attend ainsi, ou ton valider_inscription
       const response = await api.post('/index.php', {
         action: 'valider_inscription',
         inscription_id: inscriptionId
@@ -104,12 +103,10 @@ export default function TeacherDashboard() {
     }
   };
 
-  // ✍️ Alignement parfait des IDs sur l'inscription
   const handleNoteChange = (inscriptionId, valeur) => {
     setEtudiants(prev => prev.map(et => et.inscription_id === inscriptionId ? { ...et, note: valeur } : et));
   };
 
-  // 💾 Publication des notes connectée à ton PHP
   const handlePublierNotes = async () => {
     setErrorMsg('');
     setSuccessMsg('');
@@ -145,9 +142,175 @@ export default function TeacherDashboard() {
     }
   };
 
+  // 🖨️ Fonction magique pour générer et imprimer la feuille d'émargement en PDF
+  const handleImprimerEmargement = (coursTitre) => {
+    // 1. On filtre uniquement les élèves VALIDÉS pour ce cours précis
+    const elevesDuCours = inscriptionsValidees.filter(et => et.cours === coursTitre);
+
+    if (elevesDuCours.length === 0) {
+      alert("Aucun étudiant n'est encore validé dans ce cours pour générer une feuille d'émargement.");
+      return;
+    }
+
+    const dateDuJour = new Date().toLocaleDateString('fr-FR', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // 2. On crée le contenu HTML de la page blanche d'émargement (Style Haute Couture / Quiet Luxury)
+    const contenuImpression = `
+      <html>
+        <head>
+          <title>Feuille d'émargement - ${coursTitre}</title>
+          <style>
+            @media print {
+              @page { size: A4; margin: 20mm; }
+            }
+            body {
+              font-family: 'Georgia', serif;
+              color: #111111;
+              background-color: #ffffff;
+              margin: 0;
+              padding: 0;
+            }
+            .header-emargement {
+              text-align: center;
+              border-bottom: 2px solid #d4af37;
+              padding-bottom: 20px;
+              margin-bottom: 40px;
+            }
+            .logo-main {
+              font-size: 24px;
+              letter-spacing: 4px;
+              font-weight: normal;
+              margin-bottom: 10px;
+            }
+            .subtitle {
+              font-size: 10px;
+              font-family: sans-serif;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+              color: #666;
+            }
+            .meta-info {
+              margin-bottom: 30px;
+              font-size: 14px;
+              line-height: 1.6;
+            }
+            .meta-line { margin-bottom: 6px; }
+            .meta-label { font-weight: bold; color: #a39264; }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            th, td {
+              border: 1px solid #cccccc;
+              padding: 12px 15px;
+              text-align: left;
+              font-size: 13px;
+            }
+            th {
+              background-color: #fcfbfa;
+              font-family: sans-serif;
+              font-size: 11px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              color: #333;
+            }
+            .col-num { width: 5%; text-align: center; color: #888; }
+            .col-nom { width: 45%; font-weight: bold; }
+            .col-signature { width: 50%; height: 45px; } /* Case haute pour laisser la place de signer */
+            .footer-page {
+              position: fixed;
+              bottom: 0;
+              width: 100%;
+              text-align: center;
+              font-size: 10px;
+              font-family: sans-serif;
+              color: #999;
+              border-top: 1px solid #eee;
+              padding-top: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header-emargement">
+            <div class="logo-main">H A R M O N I A</div>
+            <div class="subtitle">Conservatoire National Supérieur • Feuille d'Émargement Officielle</div>
+          </div>
+
+          <div class="meta-info">
+            <div class="meta-line"><span class="meta-label">Enseignement :</span> ${coursTitre}</div>
+            <div class="meta-line"><span class="meta-label">Maître de Chaire :</span> Pr. ${user?.prenom} ${user?.nom}</div>
+            <div class="meta-line"><span class="meta-label">Séance du :</span> ${dateDuJour}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th class="col-num">N°</th>
+                <th class="col-nom">Nom & Prénom de l'Étudiant</th>
+                <th>Émargement / Signature</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${elevesDuCours.map((et, index) => `
+                <tr>
+                  <td class="col-num">${index + 1}</td>
+                  <td class="col-nom">${et.nom.toUpperCase()} ${et.prenom}</td>
+                  <td class="col-signature"></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="footer-page">
+            Document généré via le Secrétariat Numérique Harmonia • Page 1 sur 1
+          </div>
+
+          <script>
+            // Lance l'impression dès que la page est prête, puis ferme la fenêtre éphémère
+            window.onload = function() {
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    // 3. On ouvre un onglet masqué, on injecte le HTML et le navigateur propose instantanément d'enregistrer en PDF !
+    const fenetreImpression = window.open('', '_blank', 'width=800,height=600');
+    fenetreImpression.document.write(contenuImpression);
+    fenetreImpression.document.close();
+  };
+
   const demandesEnAttente = etudiants.filter(et => et.statut?.toLowerCase().includes('attente'));
   const inscriptionsValidees = etudiants.filter(et => et.statut?.toLowerCase().includes('valid'));
-  const autresInscriptions = etudiants.filter(et => !et.statut?.toLowerCase().includes('attente') && !et.statut?.toLowerCase().includes('valid'));
+
+  // 🎨 Composant interne réutilisable pour afficher la jauge "Quiet Luxury"
+  const RenderJaugeCapacite = ({ inscritsActifs, capaciteMax }) => {
+    const inscrits = parseInt(inscritsActifs) || 0;
+    const max = parseInt(capaciteMax) || 20; 
+    const estPlein = inscrits >= max;
+    const pourcentage = Math.min((inscrits / max) * 100, 100);
+
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+        <div style={{ width: '100px', height: '6px', backgroundColor: '#eae9e4', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ 
+            width: `${pourcentage}%`, 
+            height: '100%', 
+            backgroundColor: estPlein ? '#b3261e' : '#d4af37', 
+            transition: 'width 0.3s ease' 
+          }} />
+        </div>
+        <span style={{ fontSize: '11px', color: estPlein ? '#b3261e' : '#666', fontFamily: 'sans-serif' }}>
+          {inscrits}/{max} places
+        </span>
+      </div>
+    );
+  };
 
   if (loading) {
     return <div className="conservatoire-loading">Ouverture du Registre des Maîtres...</div>;
@@ -185,30 +348,41 @@ export default function TeacherDashboard() {
               <thead>
                 <tr>
                   <th>Étudiant</th>
-                  <th>Cours</th>
+                  <th>Cours & Remplissage</th>
                   <th>Statut</th>
                   <th>Actions pédagogiques</th>
                 </tr>
               </thead>
               <tbody>
-                {demandesEnAttente.map(et => (
-                  <tr key={et.inscription_id}>
-                    <td>
-                      <strong>{et.prenom} {et.nom}</strong>
-                      {et.courriel && <div style={{ fontSize: '12px', color: '#777', marginTop: '4px' }}>{et.courriel}</div>}
-                    </td>
-                    <td>{et.cours}</td>
-                    <td><span className="status-badge en-attente">{et.statut}</span></td>
-                    <td>
-                      <button className="action-btn-valid" onClick={() => handleAccepterInscription(et.inscription_id)} disabled={actionLoading === et.inscription_id}>
-                        {actionLoading === et.inscription_id ? 'Traitement...' : 'Accepter'}
-                      </button>
-                      <button className="action-btn-delete" onClick={() => handleSupprimerInscription(et.inscription_id, 'refuser')} disabled={actionLoading === et.inscription_id}>
-                        {actionLoading === et.inscription_id ? 'Traitement...' : 'Refuser'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {demandesEnAttente.map(et => {
+                  const estPlein = (parseInt(et.inscrits_actifs) || 0) >= (parseInt(et.capacite_max) || 20);
+                  return (
+                    <tr key={et.inscription_id}>
+                      <td>
+                        <strong>{et.prenom} {et.nom}</strong>
+                        {et.courriel && <div style={{ fontSize: '12px', color: '#777', marginTop: '4px' }}>{et.courriel}</div>}
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: '500' }}>{et.cours}</div>
+                        <RenderJaugeCapacite inscritsActifs={et.inscrits_actifs} capaciteMax={et.capacite_max} />
+                      </td>
+                      <td><span className="status-badge en-attente">{et.statut}</span></td>
+                      <td>
+                        <button 
+                          className="action-btn-valid" 
+                          onClick={() => handleAccepterInscription(et.inscription_id)} 
+                          disabled={actionLoading === et.inscription_id || estPlein}
+                          style={estPlein ? { backgroundColor: '#ccc', cursor: 'not-allowed', color: '#fff' } : {}}
+                        >
+                          {actionLoading === et.inscription_id ? 'Traitement...' : estPlein ? 'Complet' : 'Accepter'}
+                        </button>
+                        <button className="action-btn-delete" onClick={() => handleSupprimerInscription(et.inscription_id, 'refuser')} disabled={actionLoading === et.inscription_id}>
+                          {actionLoading === et.inscription_id ? 'Traitement...' : 'Refuser'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {demandesEnAttente.length === 0 && (
                   <tr><td colSpan="4" style={{ textAlign: 'center', fontStyle: 'italic', color: '#888', padding: '30px' }}>Aucune demande d’inscription en attente.</td></tr>
                 )}
@@ -218,11 +392,51 @@ export default function TeacherDashboard() {
             <h2 style={{ marginTop: '45px' }}>Étudiants validés</h2>
             <p className="card-sub">Liste des étudiants officiellement inscrits à vos cours.</p>
 
+            {/* 🖨️ Bandeau chic pour générer les feuilles d'émargement PDF */}
+            {inscriptionsValidees.length > 0 && (
+              <div style={{ 
+                background: '#fcfbfa', 
+                border: '1px solid #eae9e4', 
+                padding: '16px', 
+                borderRadius: '4px', 
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                flexWrap: 'wrap'
+              }}>
+                <span style={{ fontFamily: 'Georgia', fontSize: '13px', color: '#111', fontStyle: 'italic' }}>
+                  Émargements de cours :
+                </span>
+                {[...new Set(inscriptionsValidees.map(et => et.cours))].map(coursTitre => (
+                  <button
+                    key={coursTitre}
+                    onClick={() => handleImprimerEmargement(coursTitre)}
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid #d4af37',
+                      color: '#111111',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      borderRadius: '2px',
+                      fontFamily: 'sans-serif',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => { e.target.style.background = '#fcfbfa'; e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
+                    onMouseOut={(e) => { e.target.style.background = '#ffffff'; e.target.style.boxShadow = 'none'; }}
+                  >
+                    📄 Imprimer la liste : {coursTitre}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <table className="chic-table">
               <thead>
                 <tr>
                   <th>Étudiant</th>
-                  <th>Cours</th>
+                  <th>Cours & Remplissage</th>
                   <th>Statut</th>
                   <th>Actions pédagogiques</th>
                 </tr>
@@ -234,7 +448,10 @@ export default function TeacherDashboard() {
                       <strong>{et.prenom} {et.nom}</strong>
                       {et.courriel && <div style={{ fontSize: '12px', color: '#777', marginTop: '4px' }}>{et.courriel}</div>}
                     </td>
-                    <td>{et.cours}</td>
+                    <td>
+                      <div style={{ fontWeight: '500' }}>{et.cours}</div>
+                      <RenderJaugeCapacite inscritsActifs={et.inscrits_actifs} capaciteMax={et.capacite_max} />
+                    </td>
                     <td><span className="status-badge validé">{et.statut}</span></td>
                     <td>
                       <button className="action-btn-delete" onClick={() => handleSupprimerInscription(et.inscription_id, 'revoquer')} disabled={actionLoading === et.inscription_id}>

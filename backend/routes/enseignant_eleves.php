@@ -35,6 +35,7 @@ if ($method === 'GET') {
     }
 
     try {
+        // 📊 REQUÊTE AUGMENTÉE : Ajout de capacite_max et du sous-SELECT pour compter les places
         $stmt = $pdo->prepare("
             SELECT 
                 i.id AS inscription_id,
@@ -52,6 +53,8 @@ if ($method === 'GET') {
                 c.jour_semaine,
                 c.heure_debut,
                 c.heure_fin,
+                c.capacite_max,
+                (SELECT COUNT(*) FROM inscriptions WHERE cours_id = i.cours_id AND statut_inscription = 'Validée') AS inscrits_actifs,
 
                 n.valeur_note AS note
             FROM inscriptions i

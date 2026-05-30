@@ -54,6 +54,49 @@ export default function TeacherNotes() {
     } catch (err) { setErrorMsg("Erreur de transmission."); }
   };
 
+  // 📥 FONCTION D'EXPORTATION CSV (Format Excel Haute Couture)
+  const handleExporterCSV = () => {
+    if (inscriptionsValidees.length === 0) {
+      alert("Aucune donnée disponible à exporter.");
+      return;
+    }
+
+    // 1. Définition des entêtes du tableau (Séparateur point-virgule pour Excel France)
+    const entetes = ["ID Inscription", "Nom", "Prénom", "Enseignement / Cours", "Note Évaluation /20"];
+    
+    // 2. Construction des lignes de données
+    const lignes = inscriptionsValidees.map(et => [
+      et.inscription_id,
+      et.nom.toUpperCase(),
+      et.prenom,
+      et.cours,
+      et.note !== null && et.note !== '' ? et.note : "Non noté"
+    ]);
+
+    // 3. Assemblage du contenu CSV
+    // Utilisation du point-virgule ';' comme séparateur pour que Microsoft Excel l'ouvre directement en colonnes sans configuration
+    const contenuCSV = [entetes, ...lignes]
+      .map(ligne => ligne.map(valeur => `"${String(valeur).replace(/"/g, '""')}"`).join(';'))
+      .join('\n');
+
+    // 4. Ajout du BOM UTF-8 (\uFEFF) pour forcer Excel à reconnaître l'encodage et afficher correctement les accents français
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), contenuCSV], { type: 'text/csv;charset=utf-8;' });
+    
+    // 5. Création du lien de téléchargement éphémère
+    const url = URL.createObjectURL(blob);
+    const lien = document.createElement('a');
+    
+    // Format du nom de fichier : Carnet_Notes_Nom_Prenom_Date.csv
+    const nomFichier = `Carnet_Notes_${user?.nom || 'Chaire'}_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    lien.setAttribute('href', url);
+    lien.setAttribute('download', nomFichier);
+    lien.style.visibility = 'hidden';
+    document.body.appendChild(lien);
+    lien.click();
+    document.body.removeChild(lien);
+  };
+
   const inscriptionsValidees = etudiants.filter(et => et.statut?.toLowerCase().includes('valid'));
 
   if (loading) return <div className="conservatoire-loading">Ouverture du Carnet de Notes...</div>;
@@ -70,7 +113,53 @@ export default function TeacherNotes() {
       {errorMsg && <div style={{ background: '#fdecea', border: '1px solid #b3261e', color: '#b3261e', padding: '12px', marginBottom: '20px' }}>{errorMsg}</div>}
 
       <div className="teacher-card">
-        <h2>Bulletins de Notes Numériques</h2>
+        {/* En-tête de carte avec le bouton d'exportation aligné à droite */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', // 👈 Correction ici
+          alignItems: 'center', 
+          marginBottom: '35px', // Plus d'espace sous l'en-tête pour aérer le tableau
+          borderBottom: '1px solid #eae9e4', 
+          paddingBottom: '20px' 
+        }}>
+          <div>
+            <h2 style={{ margin: 0, fontFamily: 'Georgia, serif', fontWeight: 'normal' }}>
+              Bulletins de Notes Numériques
+            </h2>
+            <p className="card-sub" style={{ margin: '6px 0 0 0', color: '#666' }}>
+              Saisie et extraction des résultats de votre chaire.
+            </p>
+          </div>
+          
+          {/* Le bouton d'exportation repoussé à droite avec de la marge */}
+          {inscriptionsValidees.length > 0 && (
+            <button 
+              onClick={handleExporterCSV}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #111111',
+                color: '#111111',
+                padding: '10px 20px',
+                fontSize: '13px',
+                cursor: 'pointer',
+                borderRadius: '2px',
+                fontFamily: 'sans-serif',
+                letterSpacing: '0.5px',
+                fontWeight: '500',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginLeft: '20px' // Sécurité pour qu'il ne colle jamais le texte
+              }}
+              onMouseOver={(e) => { e.target.style.background = '#111111'; e.target.style.color = '#ffffff'; }}
+              onMouseOut={(e) => { e.target.style.background = '#ffffff'; e.target.style.color = '#111111'; }}
+            >
+              📥 Exporter le registre (.CSV)
+            </button>
+          )}
+        </div>
+
         <table className="chic-table">
           <thead>
             <tr><th>Étudiant</th><th>Cours de Chaire</th><th>Note de l'Audition (/20)</th></tr>
@@ -90,12 +179,17 @@ export default function TeacherNotes() {
                 </td>
               </tr>
             ))}
+            {inscriptionsValidees.length === 0 && (
+              <tr><td colSpan="3" style={{ textAlign: 'center', fontStyle: 'italic', color: '#888', padding: '30px' }}>Aucun étudiant validé disponible pour la saisie des notes.</td></tr>
+            )}
           </tbody>
         </table>
 
-        <button className="teacher-btn-dark" style={{ marginTop: '25px' }} onClick={handlePublierNotes}>
-          Confirmer et publier les notes
-        </button>
+        {inscriptionsValidees.length > 0 && (
+          <button className="teacher-btn-dark" style={{ marginTop: '25px' }} onClick={handlePublierNotes}>
+            Confirmer et publier les notes
+          </button>
+        )}
       </div>
     </div>
   );

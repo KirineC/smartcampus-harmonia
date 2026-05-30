@@ -59,6 +59,10 @@ elseif ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.p
 elseif ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
     include __DIR__ . '/routes/authentification.php';
 }
+// 🎯 AJOUT CRUCIAL : --- ROUTE ENREGISTREMENT PRATIQUE (MÉTRONOME) ---
+elseif (($request === '/index.php' || $request === '/') && $method === 'POST' && isset($data['action']) && $data['action'] === 'enregistrer_pratique') {
+    include __DIR__ . '/routes/pratique.php';
+}
 // --- 4. ROUTE COURS (GET) ---
 elseif ((preg_match('/\/api\/cours/', $request) || $request === '/index.php') && $method === 'GET') {
     require __DIR__ . '/routes/cours.php';

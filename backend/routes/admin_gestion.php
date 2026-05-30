@@ -177,7 +177,7 @@ if ($method === 'POST') {
 }
 
 // ============================================================
-// 🗑️ ACTION 3 : CLÔTURE D'UNE CHAIRE (RÉVOCATION DOUCE)
+// 🗑️ ACTION 3 : CLÔTURE D'UNE CHAIRE (RÉVOCATION + NOTIFS ÉLÈVES & PROF)
 // ============================================================
 if ($method === 'DELETE') {
     if (!isset($_GET['supprimer_cours'])) {
@@ -191,20 +191,53 @@ if ($method === 'DELETE') {
     try {
         $pdo->beginTransaction();
 
-        // 1. Au lieu de supprimer, on met à jour le statut du cours
+        // A. Récupérer le titre du cours ET l'ID utilisateur de l'enseignant
+        $stmtCoursInfo = $pdo->prepare("
+            SELECT c.titre, e.utilisateur_id AS prof_user_id
+            FROM cours c
+            LEFT JOIN enseignants e ON c.enseignant_id = e.id
+            WHERE c.id = ?
+        ");
+        $stmtCoursInfo->execute([$cours_id]);
+        $coursInfo = $stmtCoursInfo->fetch(PDO::FETCH_ASSOC);
+        
+        $titreCours = $coursInfo ? $coursInfo['titre'] : "Cours inconnu";
+        $profUserId = $coursInfo ? $coursInfo['prof_user_id'] : null;
+
+        // B. Révocation douce : mise à jour du statut du cours
         $stmtDelete = $pdo->prepare("UPDATE cours SET statut = 'Révoqué' WHERE id = :id");
         $stmtDelete->execute([':id' => $cours_id]);
 
-        // 2. On met à jour les inscriptions des étudiants en 'Annulé' (si la table inscription a une colonne statut, sinon optionnel)
-        // Si tu as une colonne statut dans 'inscriptions', décommmente la ligne suivante :
-        // $pdo->prepare("UPDATE inscriptions SET statut = 'Annulé' WHERE cours_id = :id")->execute([':id' => $cours_id]);
+        // Préparation du template d'insertion des notifications
+        $stmtNotif = $pdo->prepare("INSERT INTO notifications (utilisateur_id, message) VALUES (?, ?)");
+
+        // C. 👨‍🏫 NOTIFICATION DE L'ENSEIGNANT (Si trouvé)
+        if ($profUserId) {
+            $msgProf = "🎵 Cher Maître, l'administration a clôturé votre chaire d'enseignement pour le cours '" . $titreCours . "'.";
+            $stmtNotif->execute([$profUserId, $msgProf]);
+        }
+
+        // D. 👥 NOTIFICATION DES ÉTUDIANTS INSCRITS
+        $stmtEleves = $pdo->prepare("
+            SELECT e.utilisateur_id 
+            FROM inscriptions i
+            JOIN etudiants e ON i.etudiant_id = e.id
+            WHERE i.cours_id = ?
+        ");
+        $stmtEleves->execute([$cours_id]);
+        $eleves = $stmtEleves->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($eleves as $eleve) {
+            $msgEleve = "⚠️ Le cours auquel vous étiez inscrit ('" . $titreCours . "') a été révoqué par l'administration.";
+            $stmtNotif->execute([$eleve['utilisateur_id'], $msgEleve]);
+        }
 
         $pdo->commit();
-        echo json_encode(["success" => true, "message" => "La chaire a été révoquée avec succès et archivée."]);
+        echo json_encode(["success" => true, "message" => "La chaire a été révoquée. L'enseignant et les élèves ont été notifiés."]);
     } catch (PDOException $e) {
         $pdo->rollBack();
         http_response_code(500);
-        echo json_encode(["success" => false, "error" => "Erreur lors de la révocation douce : " . $e->getMessage()]);
+        echo json_encode(["success" => false, "error" => "Erreur lors de la révocation et des notifications : " . $e->getMessage()]);
     }
     exit;
 }

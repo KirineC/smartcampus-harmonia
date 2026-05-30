@@ -56,11 +56,43 @@ $isAuthLogin = preg_match('/\/api\/auth\/login/', $request);
 $isCours = preg_match('/\/api\/cours/', $request);
 $isEnseignantEleves = preg_match('/\/api\/enseignant_eleves/', $request);
 $isEnseignantActions = preg_match('/\/api\/enseignant/', $request);
+$isNotifications = preg_match('/\/api\/notifications/', $request);
 
-// 7. Routeur
+// ============================================================
+// 7. ROUTEUR (Classé par méthode HTTP et niveau de précision)
+// ============================================================
 
-// --- NOTES ÉTUDIANT : consulter mon bulletin académique ---
+// ------------------------------------------------------------
+// 🔔 MODULE DE NOTIFICATIONS SYSTEME (Priorité Absolue)
+// ------------------------------------------------------------
 if (
+    ($isNotifications || $isIndex)
+    && $method === 'GET'
+    && isset($_GET['mes_notifs'])
+) {
+    // Rend service de manière autonome pour toutes les alertes (cours révoqués, notes publiées, etc.)
+    $stmt = $pdo->prepare("SELECT * FROM notifications WHERE utilisateur_id = ? ORDER BY date_creation DESC LIMIT 10");
+    $stmt->execute([$_SESSION['user_id']]);
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    exit();
+}
+
+elseif (
+    ($isNotifications || $isIndex)
+    && $method === 'POST'
+    && isset($data['action'])
+    && $data['action'] === 'marquer_lu'
+) {
+    $stmt = $pdo->prepare("UPDATE notifications SET lu = 1 WHERE utilisateur_id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    echo json_encode(['success' => true]);
+    exit();
+}
+
+// ------------------------------------------------------------
+// 📝 MODULE ETUDIANT (Consultations spécifiques)
+// ------------------------------------------------------------
+elseif (
     ($isIndex || $request === '/api/mes_notes')
     && $method === 'GET'
     && isset($_GET['mes_notes'])
@@ -68,25 +100,6 @@ if (
     include __DIR__ . '/routes/mes_notes.php';
 }
 
-// --- INSCRIPTIONS ÉTUDIANT : demande d'inscription ou annulation via POST ---
-elseif (
-    ($isInscriptions || $isIndex)
-    && $method === 'POST'
-    && isset($data['cours_id'])
-) {
-    include __DIR__ . '/routes/inscriptions.php';
-}
-
-// --- INSCRIPTIONS ÉTUDIANT : annulation via DELETE, gardée en secours ---
-elseif (
-    ($isInscriptions || $isIndex)
-    && $method === 'DELETE'
-    && isset($_GET['annuler_inscription'])
-) {
-    include __DIR__ . '/routes/inscriptions.php';
-}
-
-// --- INSCRIPTIONS ÉTUDIANT : voir mes inscriptions ---
 elseif (
     ($isInscriptions || $isIndex)
     && $method === 'GET'
@@ -95,7 +108,9 @@ elseif (
     include __DIR__ . '/routes/inscriptions.php';
 }
 
-// --- ENSEIGNANT : récupérer les élèves / demandes d'inscription ---
+// ------------------------------------------------------------
+// 👨‍🏫 MODULE ENSEIGNANT (Listes et appels)
+// ------------------------------------------------------------
 elseif (
     ($isEnseignantEleves || $isIndex)
     && $method === 'GET'
@@ -104,22 +119,51 @@ elseif (
     include __DIR__ . '/routes/enseignant_eleves.php';
 }
 
-// --- ENSEIGNANT : accepter / refuser / valider / révoquer une inscription ---
+// ------------------------------------------------------------
+// 🏛️ MODULE ADMINISTRATEUR (Secrétariat & Chaires)
+// ------------------------------------------------------------
+elseif (
+    $isIndex 
+    && $method === 'GET' 
+    && isset($_GET['admin_gestion'])
+) {
+    include __DIR__ . '/routes/admin_gestion.php';
+}
+
+// ------------------------------------------------------------
+// ⚙️ SECTIONS D'ACTIONS DE MODIFICATION / CREATION (POST & DELETE)
+// ------------------------------------------------------------
+
+// Actions Inscriptions (S'inscrire)
+elseif (
+    ($isInscriptions || $isIndex)
+    && $method === 'POST'
+    && isset($data['cours_id'])
+    && !isset($data['action']) // Inscription standard
+) {
+    include __DIR__ . '/routes/inscriptions.php';
+}
+
+// Actions Inscriptions (Annuler en secours)
+elseif (
+    ($isInscriptions || $isIndex)
+    && $method === 'DELETE'
+    && isset($_GET['annuler_inscription'])
+) {
+    include __DIR__ . '/routes/inscriptions.php';
+}
+
+// Actions Enseignant (Gestion des demandes d'élèves)
 elseif (
     ($isEnseignantEleves || $isEnseignantActions || $isIndex)
     && $method === 'POST'
     && isset($data['action'])
-    && in_array($data['action'], [
-        'accepter_inscription',
-        'refuser_inscription',
-        'valider_inscription',
-        'revoquer_inscription'
-    ])
+    && in_array($data['action'], ['accepter_inscription', 'refuser_inscription', 'valider_inscription', 'revoquer_inscription'])
 ) {
     include __DIR__ . '/routes/enseignant_actions.php';
 }
 
-// --- ENSEIGNANT : publier les notes ---
+// Actions Enseignant (Publication des Notes)
 elseif (
     ($isIndex || preg_match('/\/api\/enseignant/', $request))
     && $method === 'POST'
@@ -129,22 +173,17 @@ elseif (
     include __DIR__ . '/routes/enseignant_notes.php';
 }
 
-// ============================================================
-// 🏛️ SECRÉTARIAT NUMÉRIQUE : ADMINISTRATION 
-// ============================================================
-// Cas A : Récupération des chaires (GET) ou Création / Modification d'un cours (POST)
+// Actions Admin (Créer ou modifier un cours)
 elseif (
     $isIndex 
-    && ($method === 'GET' || $method === 'POST') 
-    && (
-        isset($_GET['admin_gestion']) || 
-        (isset($data['action']) && ($data['action'] === 'creer_cours' || $data['action'] === 'modifier_cours'))
-    )
+    && $method === 'POST' 
+    && isset($data['action']) 
+    && ($data['action'] === 'creer_cours' || $data['action'] === 'modifier_cours')
 ) {
     include __DIR__ . '/routes/admin_gestion.php';
 }
 
-// Cas B : Clôture d'une chaire (DELETE)
+// Actions Admin (Révoquer / Clôturer un cours)
 elseif (
     $isIndex 
     && $method === 'DELETE' 
@@ -153,7 +192,9 @@ elseif (
     include __DIR__ . '/routes/admin_gestion.php';
 }
 
-// --- AUTHENTIFICATION ---
+// ------------------------------------------------------------
+// 🔓 MODULES GENERAUX UTILS & AUTH (Toujours en bas)
+// ------------------------------------------------------------
 elseif (
     ($isAuthLogin || $isIndex)
     && $method === 'POST'
@@ -163,7 +204,6 @@ elseif (
     include __DIR__ . '/routes/authentification.php';
 }
 
-// --- PRATIQUE : enregistrement journal / métronome ---
 elseif (
     ($isIndex || $isRoot)
     && $method === 'POST'
@@ -173,7 +213,7 @@ elseif (
     include __DIR__ . '/routes/pratique.php';
 }
 
-// --- COURS : récupération des cours ---
+// 🔍 ROUTES CATALOGUE ET COURS (Très génériques, gardées tout en bas)
 elseif (
     ($isCours || $isIndex)
     && $method === 'GET'
@@ -181,7 +221,6 @@ elseif (
     require __DIR__ . '/routes/cours.php';
 }
 
-// --- COURS : création d'un cours ---
 elseif (
     ($isCours || $isIndex)
     && $method === 'POST'
@@ -189,7 +228,7 @@ elseif (
     require __DIR__ . '/routes/cours.php';
 }
 
-// --- ROUTE NON TROUVÉE ---
+// 🛑 ROUTE NON TROUVÉE
 else {
     http_response_code(404);
     echo json_encode([

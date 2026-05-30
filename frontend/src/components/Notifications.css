@@ -1,0 +1,63 @@
+.notif-bell-container {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+}
+.bell-icon-wrapper {
+  font-size: 20px;
+  position: relative;
+  padding: 5px;
+}
+.bell-badge-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #b3261e;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+.notif-dropdown-menu {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  width: 300px;
+  background: #fcfbfa;
+  border: 1px solid #eae9e4;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  z-index: 1000;
+  font-family: 'Arial', sans-serif;
+}
+.notif-dropdown-header {
+  padding: 10px;
+  font-weight: bold;
+  background: #eae9e4;
+  font-size: 12px;
+  color: #555;
+  border-bottom: 1px solid #dcdad4;
+}
+.notif-item-row {
+  padding: 12px;
+  border-bottom: 1px solid #eae9e4;
+  font-size: 13px;
+}
+.notif-item-row.non-lue {
+  background-color: #fffaf0;
+  border-left: 3px solid #a39264;
+}
+.notif-text {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+.notif-date {
+  font-size: 10px;
+  color: #999;
+}
+.notif-empty-state {
+  padding: 15px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+}

@@ -49,11 +49,11 @@ export default function CatalogueCours() {
       });
 
       if (response.data.success) {
-        setMessage('✅ Inscription validée avec succès.');
+        setMessage(response.data.message || "✅ Demande d’inscription envoyée au professeur.");
         await fetchCours();
         await fetchMesInscriptions();
       } else {
-        setMessage(response.data.error || "Inscription impossible.");
+        setMessage(response.data.error || "Demande impossible.");
       }
     } catch (err) {
       console.error("Erreur inscription:", err);
@@ -61,7 +61,7 @@ export default function CatalogueCours() {
       if (err.response?.status === 401) {
         setMessage("⚠️ Vous devez être connecté pour vous inscrire.");
       } else {
-        setMessage(err.response?.data?.error || "Erreur lors de l'inscription.");
+        setMessage(err.response?.data?.error || "Erreur lors de la demande d'inscription.");
       }
     } finally {
       setInscriptionLoading(null);
@@ -79,7 +79,7 @@ export default function CatalogueCours() {
       });
 
       if (response.data.success) {
-        setMessage('✅ Inscription annulée avec succès.');
+        setMessage('✅ Demande ou inscription annulée avec succès.');
         await fetchCours();
         await fetchMesInscriptions();
       } else {
@@ -96,6 +96,52 @@ export default function CatalogueCours() {
     } finally {
       setInscriptionLoading(null);
     }
+  };
+
+  const getInscriptionPourCours = (coursId) => {
+    return mesInscriptions.find(
+      ins => Number(ins.cours_id) === Number(coursId)
+    );
+  };
+
+  const getStatutStyle = (statut) => {
+    if (!statut) return null;
+
+    const statutLower = statut.toLowerCase();
+
+    if (statutLower.includes('attente')) {
+      return {
+        label: '⏳ Demande en attente',
+        background: '#fff7df',
+        color: '#9a6200',
+        border: '#d4af37'
+      };
+    }
+
+    if (statutLower.includes('valid')) {
+      return {
+        label: '✅ Inscription acceptée',
+        background: '#e8f5e9',
+        color: '#137333',
+        border: '#137333'
+      };
+    }
+
+    if (statutLower.includes('refus')) {
+      return {
+        label: '❌ Demande refusée',
+        background: '#fdecea',
+        color: '#b3261e',
+        border: '#b3261e'
+      };
+    }
+
+    return {
+      label: statut,
+      background: '#f1f1f1',
+      color: '#555',
+      border: '#ccc'
+    };
   };
 
   const coursFiltres = cours.filter(c =>
@@ -147,19 +193,50 @@ export default function CatalogueCours() {
 
       <div className="courses-grid">
         {coursFiltres.map((c) => {
+          const inscription = getInscriptionPourCours(c.id);
+          const statutInfo = getStatutStyle(inscription?.statut_inscription);
           const coursComplet = Number(c.places_occupees) >= Number(c.capacite_max);
-          const dejaInscrit = mesInscriptions.some(
-            ins => Number(ins.cours_id) === Number(c.id)
-          );
+
+          const estEnAttente = inscription?.statut_inscription?.toLowerCase().includes('attente');
+          const estValidee = inscription?.statut_inscription?.toLowerCase().includes('valid');
+          const estRefusee = inscription?.statut_inscription?.toLowerCase().includes('refus');
 
           return (
-            <div key={c.id} className="course-card">
+            <div
+              key={c.id}
+              className="course-card"
+              style={{
+                border: statutInfo ? `2px solid ${statutInfo.border}` : undefined,
+                background: statutInfo ? statutInfo.background : undefined
+              }}
+            >
               <div>
                 <div className="course-type">
                   Cours {c.type_cours} • Semestre {c.semestre}
                 </div>
 
                 <h2 className="course-title">{c.titre}</h2>
+
+                {statutInfo && (
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      marginBottom: '12px',
+                      padding: '6px 10px',
+                      borderRadius: '999px',
+                      background: '#fff',
+                      color: statutInfo.color,
+                      border: `1px solid ${statutInfo.border}`,
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      fontFamily: 'sans-serif',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    {statutInfo.label}
+                  </div>
+                )}
 
                 <div className="course-info">
                   🎵 Maître de classe : <strong>Pr. {c.prenom} {c.prof_nom}</strong>
@@ -179,26 +256,57 @@ export default function CatalogueCours() {
                   className="course-info"
                   style={{
                     marginTop: '15px',
-                    borderTop: '1px dashed #eee',
+                    borderTop: '1px dashed #ddd',
                     paddingTop: '10px'
                   }}
                 >
                   👥 Places occupées : <strong>{c.places_occupees} / {c.capacite_max}</strong>
                 </div>
 
-                {dejaInscrit ? (
+                {estEnAttente && (
                   <button
                     className="register-button"
                     onClick={() => handleAnnulationInscription(c.id)}
                     disabled={inscriptionLoading === c.id}
                     style={{
-                      backgroundColor: '#8b1e1e',
+                      backgroundColor: '#d4af37',
+                      color: '#111',
+                      opacity: inscriptionLoading === c.id ? 0.7 : 1
+                    }}
+                  >
+                    {inscriptionLoading === c.id ? 'Annulation...' : 'Annuler la demande'}
+                  </button>
+                )}
+
+                {estValidee && (
+                  <button
+                    className="register-button"
+                    onClick={() => handleAnnulationInscription(c.id)}
+                    disabled={inscriptionLoading === c.id}
+                    style={{
+                      backgroundColor: '#137333',
                       opacity: inscriptionLoading === c.id ? 0.7 : 1
                     }}
                   >
                     {inscriptionLoading === c.id ? 'Annulation...' : 'Annuler l’inscription'}
                   </button>
-                ) : (
+                )}
+
+                {estRefusee && (
+                  <button
+                    className="register-button"
+                    disabled
+                    style={{
+                      backgroundColor: '#b3261e',
+                      opacity: 0.7,
+                      cursor: 'not-allowed'
+                    }}
+                  >
+                    Demande refusée
+                  </button>
+                )}
+
+                {!inscription && (
                   <button
                     className="register-button"
                     onClick={() => handleInscription(c.id)}
@@ -211,7 +319,7 @@ export default function CatalogueCours() {
                     {coursComplet
                       ? 'Cours complet'
                       : inscriptionLoading === c.id
-                        ? 'Inscription...'
+                        ? 'Envoi de la demande...'
                         : 'Solliciter une inscription'}
                   </button>
                 )}

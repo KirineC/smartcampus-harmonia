@@ -21,21 +21,36 @@ export default function Login() {
         password: password
       });
 
-      if (response.data.success) {
-        // 🎯 AJOUT CRUCIAL : On stocke les infos de l'étudiant renvoyées par ton PHP
-        // response.data.user doit contenir au moins { prenom: "...", role: "etudiant" }
-        localStorage.setItem('user', JSON.stringify(response.data.user || { prenom: "Étudiant", role: "etudiant" }));
+      // 🟢 CAS 1 : Connexion réussie
+      if (response.data && response.data.success) {
+        const loggedUser = response.data.user;
         
-        // Redirection vers le catalogue
-        navigate('/dashboard');
-      } else {
+        // Stockage sécurisé des infos de l'utilisateur connecté
+        localStorage.setItem('user', JSON.stringify(loggedUser));
+        
+        // 🎯 AIGUILLAGE STRATÉGIQUE SELON LE RÔLE
+        if (loggedUser.role === 'enseignant' || loggedUser.role === 'admin') {
+          navigate('/enseignant/dashboard'); // Redirection Maître / Admin
+        } else {
+          navigate('/dashboard'); // Redirection Étudiant (ton Dashboard)
+        }
+      } 
+      // 🟡 CAS 2 : Le serveur répond 200 mais avec un message d'échec (sécurité)
+      else {
         setError(response.data.error || "Identifiants académiques invalides.");
       }
+
     } catch (err) {
       console.error(err);
-      setError("Le secrétariat numérique est indisponible actuellement.");
+      
+      // 🔴 CAS 3 : Gestion fine des erreurs interceptées par Axios (Ex: Code 401 pour mauvais mot de passe)
+      if (err.response && err.response.data) {
+        setError(err.response.data.error || "Identifiants académiques invalides.");
+      } else {
+        // Erreur réseau pure (MAMP éteint, mauvaise URL...)
+        setError("Le secrétariat numérique est indisponible actuellement.");
+      }
     }
-    
   };
 
   return (
@@ -83,7 +98,7 @@ export default function Login() {
         </form>
 
         <div className="login-footer">
-          <span>ESPACE ÉTUDIANT SÉCURISÉ</span>
+          <span>ESPACE SÉCURISÉ CENTRALISÉ</span>
         </div>
 
       </div>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:8889
--- Généré le : sam. 30 mai 2026 à 09:48
+-- Généré le : ven. 29 mai 2026 à 01:45
 -- Version du serveur : 8.0.44
 -- Version de PHP : 8.3.30
 
@@ -159,8 +159,7 @@ INSERT INTO `inscriptions` (`id`, `etudiant_id`, `cours_id`, `statut_inscription
 (2, 1, 3, 'En attente', '2026-05-29 01:15:49'),
 (3, 2, 2, 'Validée', '2026-05-29 01:15:49'),
 (4, 3, 1, 'Validée', '2026-05-29 01:15:49'),
-(5, 4, 1, 'En attente', '2026-05-29 01:15:49'),
-(6, 4, 3, 'Validée', '2026-05-29 09:47:23');
+(5, 4, 1, 'En attente', '2026-05-29 01:15:49');
 
 -- --------------------------------------------------------
 
@@ -213,8 +212,7 @@ CREATE TABLE `journal_pratique` (
 INSERT INTO `journal_pratique` (`id`, `etudiant_id`, `date_session`, `duree_minutes`, `instrument_id`, `repertoire_travaille`, `notes`, `lieu`, `date_creation`) VALUES
 (1, 1, '2026-05-27', 120, 1, 'Concerto Rachmaninov n°2', NULL, NULL, '2026-05-29 01:15:49'),
 (2, 1, '2026-05-26', 90, 1, 'Gammes C majeur', NULL, NULL, '2026-05-29 01:15:49'),
-(3, 2, '2026-05-27', 60, 2, 'Bach Chaconne', NULL, NULL, '2026-05-29 01:15:49'),
-(4, 1, '2026-05-29', 30, 1, 'Nocturne Op 9 No 2 - Chopin', 'Retravailler le lyrisme de la main droite', NULL, '2026-05-29 23:58:04');
+(3, 2, '2026-05-27', 60, 2, 'Bach Chaconne', NULL, NULL, '2026-05-29 01:15:49');
 
 -- --------------------------------------------------------
 
@@ -302,8 +300,8 @@ CREATE TABLE `utilisateurs` (
 
 INSERT INTO `utilisateurs` (`id`, `courriel`, `mot_de_passe_chiffre`, `role`, `prenom`, `nom`, `date_creation`, `actif`) VALUES
 (1, 'admin@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'admin', 'Admin', 'Harmonia', '2026-05-29 01:15:49', 1),
-(2, 'prof@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'enseignant', 'Jean-Sébastien', 'Bach', '2026-05-29 01:15:49', 1),
-(3, 'sophie@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'etudiant', 'Sophie', 'Martin', '2026-05-29 01:15:49', 1),
+(2, 'prof@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'enseignant', 'Jean-Sébastien', 'Bach', '2026-05-29 01:15:49', 1),
+(3, 'sophie@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'etudiant', 'Sophie', 'Martin', '2026-05-29 01:15:49', 1),
 (4, 'thomas@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'etudiant', 'Thomas', 'Bernard', '2026-05-29 01:15:49', 1),
 (5, 'emma@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'etudiant', 'Emma', 'Rousseau', '2026-05-29 01:15:49', 1),
 (6, 'test@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'etudiant', 'Test', 'User', '2026-05-29 01:15:49', 1);
@@ -443,7 +441,7 @@ ALTER TABLE `evenements_concerts`
 -- AUTO_INCREMENT pour la table `inscriptions`
 --
 ALTER TABLE `inscriptions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT pour la table `instruments`
@@ -455,7 +453,7 @@ ALTER TABLE `instruments`
 -- AUTO_INCREMENT pour la table `journal_pratique`
 --
 ALTER TABLE `journal_pratique`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT pour la table `notes`

@@ -91,6 +91,18 @@ export default function Navbar() {
           </>
         )}
 
+        {/* 🏛️ MENU ADMINISTRATEUR */}
+        {user?.role === 'admin' && (
+          <>
+            <span 
+              onClick={() => navigate('/admin/secretariat')} 
+              className={`nav-link ${location.pathname === '/admin/secretariat' ? 'active' : ''}`}
+            >
+              Secrétariat & Chaires
+            </span>
+          </>
+        )}
+        
         <button onClick={handleLogout} className="logout-btn">
           Quitter la session
         </button>

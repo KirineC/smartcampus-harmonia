@@ -9,6 +9,7 @@ import MesNotes from './pages/MesNotes';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherInscriptions from './pages/TeacherInscriptions';
 import TeacherNotes from './pages/TeacherNotes';
+import AdminSecretariat from './pages/AdminSecretariat';
 
 export default function App() {
   return (
@@ -24,6 +25,8 @@ export default function App() {
           <Route path="/enseignant/dashboard" element={<TeacherDashboard />} />
           <Route path="/enseignant/inscriptions" element={<TeacherInscriptions />} />
           <Route path="/enseignant/notes" element={<TeacherNotes />} />
+
+          <Route path="/admin/secretariat" element={<AdminSecretariat />} />
 
           <Route path="/catalogue" element={<CatalogueCours />} />
           <Route path="/planning" element={<MonPlanning />} />

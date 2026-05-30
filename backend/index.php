@@ -81,10 +81,10 @@ elseif (
 elseif (
     ($isInscriptions || $isIndex)
     && $method === 'DELETE'
+    && isset($_GET['annuler_inscription']) // 👈 AJOUTE CETTE SÉCURITÉ ICI
 ) {
     include __DIR__ . '/routes/inscriptions.php';
 }
-
 // --- INSCRIPTIONS ÉTUDIANT : voir mes inscriptions ---
 elseif (
     ($isInscriptions || $isIndex)
@@ -126,6 +126,27 @@ elseif (
     && $data['action'] === 'publier_notes'
 ) {
     include __DIR__ . '/routes/enseignant_notes.php';
+}
+
+// ============================================================
+// 🏛️ SECRÉTARIAT NUMÉRIQUE : ADMINISTRATION (Placée haut pour éviter les conflits GET/POST)
+// ============================================================
+// Cas A : Récupération des chaires (GET) ou Création d'un cours (POST)
+elseif (
+    $isIndex 
+    && ($method === 'GET' || $method === 'POST') 
+    && (isset($_GET['admin_gestion']) || (isset($data['action']) && $data['action'] === 'creer_cours'))
+) {
+    include __DIR__ . '/routes/admin_gestion.php';
+}
+// Cas B : Clôture d'une chaire (DELETE)
+elseif (
+    $isIndex 
+    && $method === 'DELETE' 
+    // On s'assure que le paramètre est bien dans l'URL
+    && isset($_GET['supprimer_cours'])
+) {
+    include __DIR__ . '/routes/admin_gestion.php';
 }
 
 // --- AUTHENTIFICATION ---

@@ -28,13 +28,16 @@ export default function Login() {
         // Stockage sécurisé des infos de l'utilisateur connecté
         localStorage.setItem('user', JSON.stringify(loggedUser));
         
-        // 🎯 AIGUILLAGE STRATÉGIQUE SELON LE RÔLE
-        if (loggedUser.role === 'enseignant' || loggedUser.role === 'admin') {
-          navigate('/enseignant/dashboard'); // Redirection Maître / Admin
+        // 🎯 AIGUILLAGE STRATÉGIQUE CORRIGÉ
+        if (loggedUser.role === 'admin') {
+          navigate('/admin/secretariat'); // 🏛️ L'admin va directement à son secrétariat
+        } else if (loggedUser.role === 'enseignant') {
+          navigate('/enseignant/dashboard'); // 👨‍🏫 Le prof va à son tableau de bord
         } else {
-          navigate('/dashboard'); // Redirection Étudiant (ton Dashboard)
+          navigate('/dashboard'); // 🎻 L'étudiant va à son pupitre
         }
-      } 
+      }
+      
       // 🟡 CAS 2 : Le serveur répond 200 mais avec un message d'échec (sécurité)
       else {
         setError(response.data.error || "Identifiants académiques invalides.");

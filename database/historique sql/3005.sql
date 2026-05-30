@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:8889
--- Généré le : sam. 30 mai 2026 à 23:16
+-- Généré le : sam. 30 mai 2026 à 09:48
 -- Version du serveur : 8.0.44
 -- Version de PHP : 8.3.30
 
@@ -54,23 +54,21 @@ CREATE TABLE `cours` (
   `heure_debut` time DEFAULT NULL,
   `heure_fin` time DEFAULT NULL,
   `semestre` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `statut` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Actif'
+  `description` text COLLATE utf8mb4_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `cours`
 --
 
-INSERT INTO `cours` (`id`, `code_cours`, `titre`, `type_cours`, `capacite_max`, `enseignant_id`, `salle_id`, `jour_semaine`, `heure_debut`, `heure_fin`, `semestre`, `description`, `statut`) VALUES
-(1, 'PIA-101', 'Piano Débutant', 'Individuel', 1, 1, 1, 2, '10:00:00', '11:00:00', 'Automne 2026', NULL, 'Actif'),
-(2, 'VIO-101', 'Violon Intermédiaire', 'Individuel', 1, 2, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', NULL, 'Actif'),
-(3, 'ORC-101', 'Orchestre Symphonique', 'Ensemble', 50, 1, 6, 1, '15:00:00', '18:00:00', 'Automne 2026', NULL, 'Actif'),
-(4, 'SOL-101', 'Solfège Débutant', 'Collectif', 25, 3, 3, 4, '09:00:00', '10:00:00', 'Automne 2026', NULL, 'Actif'),
-(5, 'HAR-101', 'Harmonie Avancée', 'Collectif', 20, 3, 3, 5, '14:00:00', '15:30:00', 'Automne 2026', NULL, 'Actif'),
-(6, 'CHAMB-101', 'Musique de Chambre', 'Ensemble', 8, 1, 2, 2, '18:00:00', '19:30:00', 'Automne 2026', NULL, 'Actif'),
-(7, 'FLU-101', 'Cours de Flûte Traversière', 'Individuel', 2, 1, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', 'Cours d\'initiation à la flûte traversière pour débutants.', 'Actif'),
-(9, 'HRM-202', 'Haute Contre et Chant Baroque', 'Masterclass', 20, 2, 2, 4, '10:30:00', '12:00:00', '1', '', 'Révoqué');
+INSERT INTO `cours` (`id`, `code_cours`, `titre`, `type_cours`, `capacite_max`, `enseignant_id`, `salle_id`, `jour_semaine`, `heure_debut`, `heure_fin`, `semestre`, `description`) VALUES
+(1, 'PIA-101', 'Piano Débutant', 'Individuel', 1, 1, 1, 2, '10:00:00', '11:00:00', 'Automne 2026', NULL),
+(2, 'VIO-101', 'Violon Intermédiaire', 'Individuel', 1, 1, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', NULL),
+(3, 'ORC-101', 'Orchestre Symphonique', 'Ensemble', 50, 1, 6, 1, '15:00:00', '18:00:00', 'Automne 2026', NULL),
+(4, 'SOL-101', 'Solfège Débutant', 'Collectif', 25, 1, 3, 4, '09:00:00', '10:00:00', 'Automne 2026', NULL),
+(5, 'HAR-101', 'Harmonie Avancée', 'Collectif', 20, 1, 3, 5, '14:00:00', '15:30:00', 'Automne 2026', NULL),
+(6, 'CHAMB-101', 'Musique de Chambre', 'Ensemble', 8, 1, 2, 2, '18:00:00', '19:30:00', 'Automne 2026', NULL),
+(7, 'FLU-101', 'Cours de Flûte Traversière', 'Individuel', 2, 1, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', 'Cours d\'initiation à la flûte traversière pour débutants.');
 
 -- --------------------------------------------------------
 
@@ -90,9 +88,7 @@ CREATE TABLE `enseignants` (
 --
 
 INSERT INTO `enseignants` (`id`, `utilisateur_id`, `statut_titre`, `bureau`) VALUES
-(1, 2, 'Professeur', 'Bureau 101'),
-(2, 7, 'Maître de Conférence', 'Bureau 204'),
-(3, 8, 'Professeur Émérite', 'Bureau 102');
+(1, 2, 'Professeur', 'Bureau 101');
 
 -- --------------------------------------------------------
 
@@ -159,15 +155,12 @@ CREATE TABLE `inscriptions` (
 --
 
 INSERT INTO `inscriptions` (`id`, `etudiant_id`, `cours_id`, `statut_inscription`, `date_inscription`) VALUES
-(8, 1, 1, 'Validée', '2026-05-30 10:26:07'),
-(10, 1, 3, 'Validée', '2026-05-30 10:26:07'),
-(11, 2, 2, 'Validée', '2026-05-30 10:26:07'),
-(12, 2, 4, 'En attente', '2026-05-30 10:26:07'),
-(13, 3, 1, 'En attente', '2026-05-30 10:26:07'),
-(14, 3, 5, 'Validée', '2026-05-30 10:26:07'),
-(15, 4, 7, 'En attente', '2026-05-30 10:26:07'),
-(19, 1, 5, 'Validée', '2026-05-30 13:12:30'),
-(22, 1, 9, 'Validée', '2026-05-30 18:33:11');
+(1, 1, 1, 'Validée', '2026-05-29 01:15:49'),
+(2, 1, 3, 'En attente', '2026-05-29 01:15:49'),
+(3, 2, 2, 'Validée', '2026-05-29 01:15:49'),
+(4, 3, 1, 'Validée', '2026-05-29 01:15:49'),
+(5, 4, 1, 'En attente', '2026-05-29 01:15:49'),
+(6, 4, 3, 'Validée', '2026-05-29 09:47:23');
 
 -- --------------------------------------------------------
 
@@ -243,20 +236,6 @@ CREATE TABLE `notes` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `notifications`
---
-
-CREATE TABLE `notifications` (
-  `id` int NOT NULL,
-  `utilisateur_id` int NOT NULL,
-  `message` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `lu` tinyint(1) DEFAULT '0',
-  `date_creation` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Structure de la table `reservations_salles`
 --
 
@@ -293,12 +272,12 @@ CREATE TABLE `salles` (
 INSERT INTO `salles` (`id`, `nom_salle`, `batiment`, `capacite_maximale`, `type_salle`, `instruments_presents`) VALUES
 (1, 'Salle Chopin', 'Bâtiment A', 30, 'Cours', NULL),
 (2, 'Salle Liszt', 'Bâtiment A', 30, 'Cours', NULL),
-(3, 'Salle Debussy', 'Bâtiment B', 40, 'Cours', 'Piano'),
-(4, 'Studio MAO', 'Bâtiment B', 15, 'Studio', 'Piano, Flûte'),
-(5, 'Amphithéâtre', 'Bâtiment A', 200, 'Concert', 'Piano à queue, Pupitres'),
-(6, 'Salle répétition 1', 'Bâtiment C', 50, 'Répétition', 'Flûte'),
+(3, 'Salle Debussy', 'Bâtiment B', 40, 'Cours', NULL),
+(4, 'Studio MAO', 'Bâtiment B', 15, 'Studio', NULL),
+(5, 'Amphithéâtre', 'Bâtiment A', 200, 'Concert', NULL),
+(6, 'Salle répétition 1', 'Bâtiment C', 50, 'Répétition', NULL),
 (7, 'Salle répétition 2', 'Bâtiment C', 50, 'Répétition', NULL),
-(8, 'Salle orchestre', 'Bâtiment C', 80, 'Répétition', 'Piano à queue, Pupitres');
+(8, 'Salle orchestre', 'Bâtiment C', 80, 'Répétition', NULL);
 
 -- --------------------------------------------------------
 
@@ -322,14 +301,12 @@ CREATE TABLE `utilisateurs` (
 --
 
 INSERT INTO `utilisateurs` (`id`, `courriel`, `mot_de_passe_chiffre`, `role`, `prenom`, `nom`, `date_creation`, `actif`) VALUES
-(1, 'admin@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'admin', 'Admin', 'Harmonia', '2026-05-29 01:15:49', 1),
+(1, 'admin@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'admin', 'Admin', 'Harmonia', '2026-05-29 01:15:49', 1),
 (2, 'prof@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'enseignant', 'Jean-Sébastien', 'Bach', '2026-05-29 01:15:49', 1),
 (3, 'sophie@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'etudiant', 'Sophie', 'Martin', '2026-05-29 01:15:49', 1),
-(4, 'thomas@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'etudiant', 'Thomas', 'Bernard', '2026-05-29 01:15:49', 1),
-(5, 'emma@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'etudiant', 'Emma', 'Rousseau', '2026-05-29 01:15:49', 1),
-(6, 'test@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'etudiant', 'Test', 'User', '2026-05-29 01:15:49', 1),
-(7, 'vivaldi@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'enseignant', 'Antonio', 'Vivaldi', '2026-05-30 10:14:04', 1),
-(8, 'mozart@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'enseignant', 'Wolfgang', 'Mozart', '2026-05-30 10:14:04', 1);
+(4, 'thomas@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'etudiant', 'Thomas', 'Bernard', '2026-05-29 01:15:49', 1),
+(5, 'emma@harmonia.edu', '$2y$10$N9qo8uLOickgx2ZMRZoMye3ePx5RZ.oXSxc0i4EEsKAd7nKEOL.Ja', 'etudiant', 'Emma', 'Rousseau', '2026-05-29 01:15:49', 1),
+(6, 'test@harmonia.edu', '$2y$10$4nlrxt0bFmNS5EH4d13NSOlQrlbfHoh.2MlaHSowrnhj5/Tem5sKe', 'etudiant', 'Test', 'User', '2026-05-29 01:15:49', 1);
 
 --
 -- Index pour les tables déchargées
@@ -407,13 +384,6 @@ ALTER TABLE `notes`
   ADD KEY `inscription_id` (`inscription_id`);
 
 --
--- Index pour la table `notifications`
---
-ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `utilisateur_id` (`utilisateur_id`);
-
---
 -- Index pour la table `reservations_salles`
 --
 ALTER TABLE `reservations_salles`
@@ -449,13 +419,13 @@ ALTER TABLE `assiduites`
 -- AUTO_INCREMENT pour la table `cours`
 --
 ALTER TABLE `cours`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT pour la table `enseignants`
 --
 ALTER TABLE `enseignants`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `etudiants`
@@ -473,7 +443,7 @@ ALTER TABLE `evenements_concerts`
 -- AUTO_INCREMENT pour la table `inscriptions`
 --
 ALTER TABLE `inscriptions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT pour la table `instruments`
@@ -491,13 +461,7 @@ ALTER TABLE `journal_pratique`
 -- AUTO_INCREMENT pour la table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT pour la table `notifications`
---
-ALTER TABLE `notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `reservations_salles`
@@ -515,7 +479,7 @@ ALTER TABLE `salles`
 -- AUTO_INCREMENT pour la table `utilisateurs`
 --
 ALTER TABLE `utilisateurs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Contraintes pour les tables déchargées
@@ -574,12 +538,6 @@ ALTER TABLE `journal_pratique`
 --
 ALTER TABLE `notes`
   ADD CONSTRAINT `notes_ibfk_1` FOREIGN KEY (`inscription_id`) REFERENCES `inscriptions` (`id`) ON DELETE CASCADE;
-
---
--- Contraintes pour la table `notifications`
---
-ALTER TABLE `notifications`
-  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`utilisateur_id`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE;
 
 --
 -- Contraintes pour la table `reservations_salles`

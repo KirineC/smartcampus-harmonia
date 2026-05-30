@@ -30,7 +30,8 @@ if ($method === 'GET') {
         $stmtProfs = $pdo->query("SELECT e.id, u.nom, u.prenom FROM enseignants e JOIN utilisateurs u ON e.utilisateur_id = u.id ORDER BY u.nom");
         $listeProfs = $stmtProfs->fetchAll(PDO::FETCH_ASSOC);
 
-        $stmtSalles = $pdo->query("SELECT id, nom_salle, batiment FROM salles ORDER BY nom_salle");
+        // C. On récupère TOUTES les infos de la salle, y compris les instruments !
+        $stmtSalles = $pdo->query("SELECT id, nom_salle, batiment, capacite_maximale, instruments_presents FROM salles ORDER BY nom_salle");
         $listeSalles = $stmtSalles->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode([

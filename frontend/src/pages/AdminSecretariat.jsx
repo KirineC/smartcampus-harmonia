@@ -72,17 +72,43 @@ export default function AdminSecretariat() {
   // ✍️ Soumission Création (POST)
   const handleCreerCours = async (e) => {
     e.preventDefault();
-    setSubmitting(true); setErrorMsg(''); setSuccessMsg('');
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const salleSelectionnee = salles.find(s => String(s.id) === String(form.salle_id));
+
+    if (salleSelectionnee) {
+      // ❌ CONFLIT 1 : Capacité Logistique
+      const placesDemandees = parseInt(form.capacite_max, 10);
+      const capaciteSalleMax = parseInt(salleSelectionnee.capacite_maximale, 10);
+
+      if (placesDemandees > capaciteSalleMax) {
+        setErrorMsg(`🚨 Conflit Logistique : La salle "${salleSelectionnee.nom_salle}" est trop petite. Capacité maximale : ${capaciteSalleMax} places (demandé : ${placesDemandees}).`);
+        return; 
+      }
+
+      // 🎹 CONFLIT 2 : Acoustique (via le Nom de la Salle)
+      const aBesoinDePiano = form.titre.toLowerCase().includes('piano');
+      const estUneSallePiano = salleSelectionnee.nom_salle.toLowerCase().includes('piano');
+
+      if (aBesoinDePiano && !estUneSallePiano) {
+        if (!window.confirm(`⚠️ Avertissement Acoustique : Vous planifiez un cours de Piano dans la salle "${salleSelectionnee.nom_salle}", qui ne semble pas dédiée au piano. Continuer ?`)) {
+          return;
+        }
+      }
+    }
+
+    setSubmitting(true);
     try {
       const response = await api.post('/index.php', { action: 'creer_cours', ...form });
       if (response.data && response.data.success) {
-        setSuccessMsg("✨ La chaire d'enseignement a été ouverte.");
+        setSuccessMsg("✨ La chaire d'enseignement a été ouverte avec succès.");
         setForm(prev => ({ ...prev, code_cours: '', titre: '', description: '' }));
         await chargerHubAdmin();
         setActiveTab('liste');
       }
     } catch (err) {
-      setErrorMsg(err.response?.status === 409 ? err.response.data.error : "Erreur de validation.");
+      setErrorMsg(err.response?.data?.error || "Erreur de validation lors de la création.");
     } finally {
       setSubmitting(false);
     }
@@ -91,7 +117,33 @@ export default function AdminSecretariat() {
   // ✏️ Soumission Modification (POST avec action modifier)
   const handleModifierCours = async (e) => {
     e.preventDefault();
-    setSubmitting(true); setErrorMsg(''); setSuccessMsg('');
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const salleSelectionnee = salles.find(s => String(s.id) === String(coursEnEdition.salle_id));
+
+    if (salleSelectionnee) {
+      // ❌ CONFLIT 1 : Capacité Logistique en Édition
+      const placesDemandees = parseInt(coursEnEdition.capacite_max, 10);
+      const capaciteSalleMax = parseInt(salleSelectionnee.capacite_maximale, 10);
+
+      if (placesDemandees > capaciteSalleMax) {
+        setErrorMsg(`🚨 Conflit Logistique : La salle "${salleSelectionnee.nom_salle}" ne peut pas accueillir ${placesDemandees} personnes. (Max : ${capaciteSalleMax}).`);
+        return;
+      }
+
+      // 🎹 CONFLIT 2 : Acoustique en Édition
+      const aBesoinDePiano = coursEnEdition.titre.toLowerCase().includes('piano');
+      const estUneSallePiano = salleSelectionnee.nom_salle.toLowerCase().includes('piano');
+
+      if (aBesoinDePiano && !estUneSallePiano) {
+        if (!window.confirm(`⚠️ Avertissement Acoustique : La salle "${salleSelectionnee.nom_salle}" n'est pas configurée pour le Piano. Enregistrer quand même ?`)) {
+          return;
+        }
+      }
+    }
+
+    setSubmitting(true);
     try {
       const response = await api.post('/index.php', {
         action: 'modifier_cours',
@@ -99,11 +151,11 @@ export default function AdminSecretariat() {
       });
       if (response.data && response.data.success) {
         setSuccessMsg("💾 Les modifications ont été scellées dans le registre.");
-        setCoursEnEdition(null); // Ferme la modale
+        setCoursEnEdition(null); 
         await chargerHubAdmin();
       }
     } catch (err) {
-      setErrorMsg(err.response?.status === 409 ? err.response.data.error : "Erreur lors de la modification.");
+      setErrorMsg(err.response?.data?.error || "Erreur lors de la modification du cours.");
     } finally {
       setSubmitting(false);
     }

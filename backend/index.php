@@ -135,7 +135,10 @@ elseif (
 elseif (
     $isIndex 
     && ($method === 'GET' || $method === 'POST') 
-    && (isset($_GET['admin_gestion']) || (isset($data['action']) && $data['action'] === 'creer_cours'))
+    && (
+        isset($_GET['admin_gestion']) || 
+        (isset($data['action']) && ($data['action'] === 'creer_cours' || $data['action'] === 'modifier_cours'))
+    )
 ) {
     include __DIR__ . '/routes/admin_gestion.php';
 }

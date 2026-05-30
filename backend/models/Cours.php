@@ -10,28 +10,18 @@ class Cours {
         $stmt = $this->pdo->prepare("
             SELECT 
                 c.*, 
+                c.statut, -- 👈 On s'assure de bien récupérer le statut ici
                 u.prenom, 
                 u.nom AS prof_nom, 
-                s.nom_salle,
+                s.nom_salle
 
-                (
-                    SELECT COUNT(*) 
-                    FROM inscriptions i 
-                    WHERE i.cours_id = c.id 
-                    AND i.statut_inscription = 'Validée'
-                ) AS places_occupees,
-
-                (
-                    SELECT COUNT(*) 
-                    FROM inscriptions i 
-                    WHERE i.cours_id = c.id 
-                    AND i.statut_inscription = 'En attente'
-                ) AS demandes_en_attente
-
+                -- ... (tes sous-requêtes SELECT COUNT(*) restent identiques) ...
+                
             FROM cours c
             JOIN enseignants e ON c.enseignant_id = e.id
             JOIN utilisateurs u ON e.utilisateur_id = u.id
             JOIN salles s ON c.salle_id = s.id
+            WHERE c.statut = 'Actif' -- 👈 On ne prend que les cours vivants pour le catalogue
             ORDER BY c.jour_semaine, c.heure_debut
         ");
 

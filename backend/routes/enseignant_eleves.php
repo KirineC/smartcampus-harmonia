@@ -35,7 +35,7 @@ if ($method === 'GET') {
     }
 
     try {
-        // 1. Liste des élèves (Requête existante conservée à l'identique)
+        // 1. 🎻 Liste des élèves (Requête nettoyée et sécurisée avec c.statut)
         $stmt = $pdo->prepare("
             SELECT 
                 i.id AS inscription_id,
@@ -53,7 +53,8 @@ if ($method === 'GET') {
                 c.heure_fin,
                 c.capacite_max,
                 (SELECT COUNT(*) FROM inscriptions WHERE cours_id = i.cours_id AND statut_inscription = 'Validée') AS inscrits_actifs,
-                n.valeur_note AS note
+                n.valeur_note AS note,
+                c.statut AS cours_statut -- 🎯 C'est ici qu'on l'injecte proprement !
             FROM inscriptions i
             JOIN etudiants e ON i.etudiant_id = e.id
             JOIN utilisateurs u_eleve ON e.utilisateur_id = u_eleve.id
@@ -88,7 +89,6 @@ if ($method === 'GET') {
         $resTaux = $stmtTaux->fetch(PDO::FETCH_ASSOC);
         $tauxValidation = $resTaux['total'] > 0 ? round(($resTaux['valides'] / $resTaux['total']) * 100) : 0;
 
-        // 2. 📊 CALCUL DYNAMIQUE DES STATISTIQUES ÉPURÉES
         // Moyenne générale & Taux de complétion des notes
         $sqlNotes = "SELECT 
                         AVG(n.valeur_note) as moyenne,
@@ -197,7 +197,6 @@ if ($method === 'POST') {
 
         // Accepter la demande
         if ($action === 'accepter_inscription') {
-            // Vérifier la capacité uniquement sur les inscriptions validées
             $stmt = $pdo->prepare("
                 SELECT COUNT(*)
                 FROM inscriptions
@@ -229,7 +228,7 @@ if ($method === 'POST') {
             exit();
         }
 
-        // Refuser la demande : on garde une trace en statut Refusée
+        // Refuser la demande
         if ($action === 'refuser_inscription') {
             $stmt = $pdo->prepare("
                 UPDATE inscriptions

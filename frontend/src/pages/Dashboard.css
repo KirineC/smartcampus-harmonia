@@ -1,5 +1,5 @@
 .dashboard-wrapper {
-  background-color: #fcfbfa;
+  background-color: #f4f2ed; /* soit #fcfbfa soit  */
   color: #111111;
   min-height: 100vh;
   padding: 60px 40px;
@@ -38,7 +38,14 @@
   border: 1px solid #e5e4e0;
   padding: 30px;
   border-radius: 2px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.01);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+/* Le relief magique au survol */
+.dashboard-card:hover {
+  transform: translateY(-4px); /* La carte monte légèrement */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04); /* L'ombre s'adoucit et s'étend */
+  border-color: #d4af37; /* Les contours s'illuminent discrètement en Or */
 }
 
 .card-title {
@@ -303,4 +310,53 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   FONDS TEXTURÉS COMPLETS POUR LES CARTES (FILIGRANES DE LUXE)
+   ========================================================================== */
+
+/* Applique un positionnement relatif pour l'overlay sur toutes les cartes */
+.dashboard-card, .gate-card {
+  position: relative;
+  overflow: hidden; /* Empêche tout dépassement */
+}
+
+/* 1. Carte Métronome (1ère de la grille) */
+.dashboard-grid .dashboard-card:nth-child(1) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/metronome.jpg');
+  background-size: cover; /* Occupe tout l'espace */
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 2. Carte Programme (2ème de la grille) */
+.dashboard-grid .dashboard-card:nth-child(2) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/programme.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 3. Porte Catalogue (1ère des démarches) */
+.gates-grid .gate-card:nth-child(1) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/catalogue.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* 4. Porte Planning (2ème des démarches) */
+.gates-grid .gate-card:nth-child(2) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/planning.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }

@@ -1,6 +1,6 @@
 .catalogue-container {
   min-height: 100vh;
-  background-color: #fcfbfa;
+  background-color: #f4f2ed; /* soit #fcfbfa soit  */;
   font-family: 'Georgia', serif;
   padding: 40px 20px;
 }

@@ -47,14 +47,17 @@ export default function MonPlanning() {
             const jourTextuel = mapChiffreEnJour[item.jour_semaine];
             if (agencement[jourTextuel]) {
               agencement[jourTextuel].push({
-                id: item.id,
-                titre: item.titre,
-                code: item.nom_salle || 'Studio',
-                type: item.type_cours || 'Collectif',
+                id: item.cours_id,
+                titre: item.titre, 
+                code: item.nom_salle || 'Studio', 
+                type: item.type_cours || 'Collectif', 
                 debut: item.heure_debut ? item.heure_debut.substring(0, 5) : '00:00',
                 fin: item.heure_fin ? item.heure_fin.substring(0, 5) : '00:00',
                 prof: item.prof_nom || 'Maître Indisponible',
-                statut: item.statut_inscription
+                max: item.capacite_max,
+                inscrits: item.inscrits_actifs,
+                statut_inscription: item.statut_inscription, 
+                statut_cours: item.cours_statut || 'Actif' // 🎯 Reçoit directement le statut du PHP
               });
             }
           });
@@ -108,7 +111,8 @@ export default function MonPlanning() {
                 debut: item.heure_debut ? item.heure_debut.substring(0, 5) : '00:00',
                 fin: item.heure_fin ? item.heure_fin.substring(0, 5) : '00:00',
                 max: item.capacite_max,
-                inscrits: item.inscrits_actifs
+                inscrits: item.inscrits_actifs,
+                statut_cours: item.cours_statut || 'Actif'
               });
             }
           }
@@ -170,26 +174,37 @@ export default function MonPlanning() {
               
               {coursSemaine[jour]?.map(c => {
                 const estEtudiant = user?.role === 'etudiant';
+                const estRevoque = c.statut_cours === 'Révoqué';
+
                 return (
                   <div 
                     key={c.id} 
                     className={`carte-cours-planning ${coursSelectionne?.id === c.id ? 'selectionnee' : ''}`}
+                    style={estRevoque ? { opacity: 0.4, backgroundColor: '#f5f4f0', borderLeft: '3px solid #b3261e', cursor: 'not-allowed' } : {}}
                     onClick={() => setCoursSelectionne(c)}
                   >
-                    <span className="type-cours-tag">{c.type}</span>
-                    <h4>{c.titre}</h4>
+                    <span className="type-cours-tag" style={estRevoque ? { background: '#b3261e', color: '#fff' } : {}}>{c.type}</span>
+      
+                    <h4>{c.titre} {estRevoque && <span style={{ color: '#b3261e', fontSize: '12px', display: 'block', marginTop: '2px' }}>❌ (Chaire Annulée)</span>}</h4>
+      
                     <div className="horaire-cours">{c.debut} — {c.fin}</div>
-                    
+      
                     <div className="footer-cours-planning">
                       {estEtudiant ? (
                         <>
                           <div style={{ marginBottom: '6px', color: '#666' }}>📍 {c.code}</div>
-                          <span className={`status-dot ${c.statut === 'Validée' ? 'approved' : 'pending'}`} style={{ fontSize: '9px', padding: '2px 6px' }}>
-                            {c.statut === 'Validée' ? 'Confirmé' : 'En attente'}
+                          <span className={`status-dot ${estRevoque ? 'annule' : (c.statut_inscription === 'Validée' ? 'approved' : 'pending')}`} style={estRevoque ? { background: '#b3261e', color: '#fff', fontSize: '9px', padding: '2px 6px' } : { fontSize: '9px', padding: '2px 6px' }}>
+                            {estRevoque ? 'Annulé par l\'Admin' : (c.statut_inscription === 'Validée' ? 'Confirmé' : 'En attente')}
                           </span>
                         </>
                       ) : (
-                        <>📍 Salle {c.code} • <span style={{ color: '#a39264' }}>{c.inscrits}/{c.max} él.</span></>
+                        <>
+                          {estRevoque ? (
+                            <span style={{ color: '#b3261e', fontSize: '11px', fontWeight: '600' }}>Cours révoqué par le Secrétariat</span>
+                          ) : (
+                            <>📍 Salle {c.code} • <span style={{ color: '#a39264' }}>{c.inscrits}/{c.max} él.</span></>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

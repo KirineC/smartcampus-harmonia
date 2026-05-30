@@ -161,17 +161,17 @@ export default function AdminSecretariat() {
     }
   };
 
-  // 🗑️ Suppression (DELETE)
+  // 🗑️ Suppression (DELETE - Révocation Douce)
   const handleSupprimerCours = async (coursId) => {
-    if (!window.confirm("Fermer cette chaire ? Cela révoquera TOUTES les inscriptions élèves liées !")) return;
+    if (!window.confirm("Fermer cette chaire ? Cela archivera le cours et révoquera les inscriptions élèves liées !")) return;
     try {
       const response = await api.delete(`/index.php?supprimer_cours=${coursId}`);
       if (response.data && response.data.success) {
-        setSuccessMsg("❌ L'enseignement et ses inscriptions ont été révoqués.");
+        setSuccessMsg("❌ L'enseignement a été révoqué avec succès du catalogue courant.");
         await chargerHubAdmin();
       }
     } catch (err) {
-      setErrorMsg("Impossible de supprimer ce cours.");
+      setErrorMsg("Impossible de modifier le statut de ce cours.");
     }
   };
 
@@ -213,11 +213,16 @@ export default function AdminSecretariat() {
             </thead>
             <tbody>
               {cours.map(c => (
-                <tr key={c.id}>
+                /* 🎯 MODIFICATION ICI : On grise la ligne si le cours est Révoqué */
+                <tr key={c.id} style={c.statut === 'Révoqué' ? { opacity: 0.5, backgroundColor: '#f9f9f9' } : {}}>
                   <td>
                     <span style={{ fontSize: '11px', color: '#a39264', fontWeight: '600' }}>{c.code_cours}</span>
                     <strong style={{ display: 'block', fontSize: '15px' }}>{c.titre}</strong>
                     <span style={{ fontSize: '12px', color: '#777' }}>{c.type_cours} • {c.capacite_max} pl.</span>
+                    {/* 🎯 MODIFICATION ICI : On affiche un badge d'avertissement rouge discret */}
+                    {c.statut === 'Révoqué' && (
+                      <span style={{ display: 'inline-block', marginTop: '5px', padding: '2px 6px', background: '#b3261e', color: '#fff', fontSize: '10px', fontWeight: 'bold', fontFamily: 'sans-serif', borderRadius: '3px' }}>CHAIRE RÉVOQUÉE</span>
+                    )}
                   </td>
                   <td><span style={{ fontFamily: 'Georgia', fontStyle: 'italic' }}>Pr. {c.prof_prenom} {c.prof_nom}</span></td>
                   <td>
@@ -227,8 +232,15 @@ export default function AdminSecretariat() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <button className="minimal-btn" style={{ padding: '6px 12px', fontSize: '11px', background: '#a39264' }} onClick={() => setCoursEnEdition(c)}>✏️ Éditer</button>
-                      <button className="action-btn-delete" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => handleSupprimerCours(c.id)}>Révoquer</button>
+                      {/* 🎯 MODIFICATION ICI : On n'affiche les boutons d'actions QUE si le cours n'est pas encore Révoqué */}
+                      {c.statut !== 'Révoqué' ? (
+                        <>
+                          <button className="minimal-btn" style={{ padding: '6px 12px', fontSize: '11px', background: '#a39264' }} onClick={() => setCoursEnEdition(c)}>✏️ Éditer</button>
+                          <button className="action-btn-delete" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => handleSupprimerCours(c.id)}>Révoquer</button>
+                        </>
+                      ) : (
+                        <span style={{ fontStyle: 'italic', color: '#999', fontSize: '12px' }}>Chaire archivée</span>
+                      )}
                     </div>
                   </td>
                 </tr>

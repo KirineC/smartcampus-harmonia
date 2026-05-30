@@ -30,7 +30,8 @@ if ($method === 'GET') {
             c.jour_semaine,
             c.heure_debut,
             c.heure_fin,
-            s.nom_salle
+            s.nom_salle, -- 🎯 La virgule magique est rajoutée ici !
+            c.statut AS cours_statut
         FROM inscriptions i
         JOIN cours c ON i.cours_id = c.id
         LEFT JOIN salles s ON c.salle_id = s.id

@@ -18,8 +18,7 @@ if ($method === 'GET') {
         $stmtCours = $pdo->query("
             SELECT 
                 c.id, c.code_cours, c.titre, c.type_cours, c.capacite_max, 
-                c.jour_semaine, c.heure_debut, c.heure_fin, c.semestre, c.description,
-                c.salle_id, c.enseignant_id, u.nom AS prof_nom, u.prenom AS prof_prenom 
+                c.jour_semaine, c.heure_debut, c.heure_fin, c.semestre, c.description, c.salle_id, c.enseignant_id, u.nom AS prof_nom, u.prenom AS prof_prenom, c.statut
             FROM cours c
             LEFT JOIN enseignants e ON c.enseignant_id = e.id          
             LEFT JOIN utilisateurs u ON e.utilisateur_id = u.id        
@@ -178,7 +177,7 @@ if ($method === 'POST') {
 }
 
 // ============================================================
-// 🗑️ ACTION 3 : CLÔTURE D'UNE CHAIRE (DELETE)
+// 🗑️ ACTION 3 : CLÔTURE D'UNE CHAIRE (RÉVOCATION DOUCE)
 // ============================================================
 if ($method === 'DELETE') {
     if (!isset($_GET['supprimer_cours'])) {
@@ -192,18 +191,20 @@ if ($method === 'DELETE') {
     try {
         $pdo->beginTransaction();
 
-        $stmtInsc = $pdo->prepare("DELETE FROM inscriptions WHERE cours_id = :id");
-        $stmtInsc->execute([':id' => $cours_id]);
-
-        $stmtDelete = $pdo->prepare("DELETE FROM cours WHERE id = :id");
+        // 1. Au lieu de supprimer, on met à jour le statut du cours
+        $stmtDelete = $pdo->prepare("UPDATE cours SET statut = 'Révoqué' WHERE id = :id");
         $stmtDelete->execute([':id' => $cours_id]);
 
+        // 2. On met à jour les inscriptions des étudiants en 'Annulé' (si la table inscription a une colonne statut, sinon optionnel)
+        // Si tu as une colonne statut dans 'inscriptions', décommmente la ligne suivante :
+        // $pdo->prepare("UPDATE inscriptions SET statut = 'Annulé' WHERE cours_id = :id")->execute([':id' => $cours_id]);
+
         $pdo->commit();
-        echo json_encode(["success" => true, "message" => "Le cours a été supprimé."]);
+        echo json_encode(["success" => true, "message" => "La chaire a été révoquée avec succès et archivée."]);
     } catch (PDOException $e) {
         $pdo->rollBack();
         http_response_code(500);
-        echo json_encode(["success" => false, "error" => "Erreur de suppression : " . $e->getMessage()]);
+        echo json_encode(["success" => false, "error" => "Erreur lors de la révocation douce : " . $e->getMessage()]);
     }
     exit;
 }

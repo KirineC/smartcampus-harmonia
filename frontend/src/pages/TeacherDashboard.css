@@ -129,3 +129,9 @@
 .animate-fade {
   animation: fadeIn 0.3s ease-in-out;
 }
+
+.menu-shortcut-card:hover {
+  transform: translateY(-4px);
+  border-color: #d4af37 !important; /* Liseré d'or signature au survol */
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.04);
+}

@@ -63,11 +63,25 @@ export default function Navbar() {
               onClick={() => navigate('/enseignant/dashboard')} 
               className={`nav-link ${location.pathname === '/enseignant/dashboard' ? 'active' : ''}`}
             >
-              Registre des Maîtres
+              Vue d'ensemble
             </span>
 
             <span 
-              onClick={() => navigate('/planning')} // En attendant de voir si vous créez une page dédiée ou si c'est géré dedans !
+              onClick={() => navigate('/enseignant/inscriptions')} 
+              className={`nav-link ${location.pathname === '/enseignant/inscriptions' ? 'active' : ''}`}
+            >
+              Classes & Pupitres
+            </span>
+
+            <span 
+              onClick={() => navigate('/enseignant/notes')} 
+              className={`nav-link ${location.pathname === '/enseignant/notes' ? 'active' : ''}`}
+            >
+              Saisie des Notes
+            </span>
+
+            <span 
+              onClick={() => navigate('/planning')} 
               className={`nav-link ${location.pathname === '/planning' ? 'active' : ''}`}
             >
               Mon Emploi du Temps

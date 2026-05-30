@@ -47,16 +47,46 @@ export default function TeacherDashboard() {
     }
   };
 
-  // 👍 Validation d'une inscription en local (et bientôt en base SQL)
-  const handleAccepterInscription = (inscriptionId) => {
-    setEtudiants(prev => prev.map(et => et.inscription_id === inscriptionId ? { ...et, statut: 'Validée' } : et));
-    alert("L'étudiant a été inscrit officiellement à votre classe.");
+  // 👍 Validation d'une inscription en base SQL
+  const handleAccepterInscription = async (inscriptionId) => {
+    try {
+      const response = await api.post('/index.php', {
+        action: 'valider_inscription',
+        inscription_id: inscriptionId // 🌟 Corrigé ici (plus de double id)
+      });
+
+      if (response.data && response.data.success) {
+        setEtudiants(prev => prev.map(et => et.inscription_id === inscriptionId ? { ...et, statut: 'Validée' } : et));
+        alert("L'étudiant a été inscrit officiellement à votre classe.");
+      } else {
+        alert(response.data.error || "Erreur lors de la validation.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Impossible de joindre le secrétariat académique.");
+    }
   };
 
-  // ❌ Révocation d'une inscription
-  const handleSupprimerInscription = (inscriptionId) => {
-    setEtudiants(prev => prev.filter(et => et.inscription_id !== inscriptionId));
-    alert("L'inscription a été révoquée du registre.");
+  // ❌ Révocation d'une inscription en base SQL
+  const handleSupprimerInscription = async (inscriptionId) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir révoquer cet étudiant de votre registre ?")) return;
+    
+    try {
+      const response = await api.post('/index.php', {
+        action: 'revoquer_inscription',
+        inscription_id: inscriptionId // 🌟 Corrigé ici aussi
+      });
+
+      if (response.data && response.data.success) {
+        setEtudiants(prev => prev.filter(et => et.inscription_id !== inscriptionId));
+        alert("L'inscription a été révoquée du registre.");
+      } else {
+        alert(response.data.error || "Erreur lors de la révocation.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Impossible de joindre le secrétariat académique.");
+    }
   };
 
   // ✍️ Modification d'une note

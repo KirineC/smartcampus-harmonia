@@ -59,6 +59,10 @@ elseif ((preg_match('/\/api\/inscriptions/', $request) || $request === '/index.p
 elseif (($request === '/index.php' || preg_match('/\/api\/enseignant/', $request)) && $method === 'GET' && isset($_GET['liste_eleves_prof'])) { 
     include __DIR__ . '/routes/enseignant_eleves.php';
 }
+// --- ROUTE ACTIONS SUR LES INSCRIPTIONS (VALIDER / RÉVOQUER) ---
+elseif (($request === '/index.php' || preg_match('/\/api\/enseignant/', $request)) && $method === 'POST' && isset($data['action']) && ($data['action'] === 'valider_inscription' || $data['action'] === 'revoquer_inscription')) {
+    include __DIR__ . '/routes/enseignant_actions.php';
+}
 // --- 3. ROUTE AUTHENTIFICATION ---
 elseif ((preg_match('/\/api\/auth\/login/', $request) || $request === '/index.php') && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
     include __DIR__ . '/routes/authentification.php';

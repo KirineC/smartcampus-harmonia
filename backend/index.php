@@ -59,8 +59,17 @@ $isEnseignantActions = preg_match('/\/api\/enseignant/', $request);
 
 // 7. Routeur
 
-// --- INSCRIPTIONS ÉTUDIANT : demande d'inscription ou annulation via POST ---
+// --- NOTES ÉTUDIANT : consulter mon bulletin académique ---
 if (
+    ($isIndex || $request === '/api/mes_notes')
+    && $method === 'GET'
+    && isset($_GET['mes_notes'])
+) {
+    include __DIR__ . '/routes/mes_notes.php';
+}
+
+// --- INSCRIPTIONS ÉTUDIANT : demande d'inscription ou annulation via POST ---
+elseif (
     ($isInscriptions || $isIndex)
     && $method === 'POST'
     && isset($data['cours_id'])
@@ -109,11 +118,11 @@ elseif (
     include __DIR__ . '/routes/enseignant_actions.php';
 }
 
-// --- ENSEIGNANT : publier les notes (Placée avant les cours pour éviter le conflit !) ---
+// --- ENSEIGNANT : publier les notes ---
 elseif (
-    ($isIndex || preg_match('/\/api\/enseignant/', $request)) 
-    && $method === 'POST' 
-    && isset($data['action']) 
+    ($isIndex || preg_match('/\/api\/enseignant/', $request))
+    && $method === 'POST'
+    && isset($data['action'])
     && $data['action'] === 'publier_notes'
 ) {
     include __DIR__ . '/routes/enseignant_notes.php';
@@ -147,7 +156,7 @@ elseif (
     require __DIR__ . '/routes/cours.php';
 }
 
-// --- COURS : création d'un cours (Placée en dernier car très globale) ---
+// --- COURS : création d'un cours ---
 elseif (
     ($isCours || $isIndex)
     && $method === 'POST'

@@ -1,10 +1,10 @@
-/* Conteneur global */
+/* Conteneur global Harmonia */
 .harmonia-art-wrapper {
-  background-color: #f4f2ed; /* soit #fcfbfa soit  */
+  background-color: #faf9f5; /* Couleur lin signature uniforme */
   color: #111111;
   min-height: 100vh;
   padding: 60px 40px;
-  font-family: 'Georgia', serif; /* Unification de la police de base */
+  font-family: 'Georgia', serif;
 }
 
 .conservatoire-loading {
@@ -22,9 +22,9 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  border-bottom: 2px solid #d4af37; /* 🪙 La touche d'Or en ligne de séparation */
+  border-bottom: 2px solid #d4af37; /* Liseré d'or signature */
   padding-bottom: 25px;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .sc-tag {
@@ -51,7 +51,7 @@
   margin: 5px 0 0 0;
 }
 
-/* Bouton Minimaliste de Luxe Or & Noir */
+/* Bouton Minimaliste de Luxe */
 .minimal-btn {
   background: #111111;
   color: #ffffff;
@@ -67,130 +67,137 @@
 }
 
 .minimal-btn:hover {
-  background-color: #d4af37; /* Devient Or au survol */
+  background-color: #d4af37;
 }
 
-/* Structure en Portée Musicale */
-.partition-stream {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.measure-row {
+/* 🗓️ LA GRILLE DE PUPITRE UNIQUE */
+.grille-pupitre {
   display: grid;
-  grid-template-columns: 250px 1fr;
-  border-bottom: 1px solid #e5e4e0;
-  padding: 35px 0;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 15px;
+  align-items: start;
 }
 
-.measure-row:last-child {
-  border-bottom: none;
-}
-
-/* Colonne Jour */
-.measure-day {
-  font-size: 24px;
-  font-weight: normal;
-  margin: 0 0 5px 0;
-  letter-spacing: 0.5px;
-}
-
-.measure-tempo-indicator {
-  font-family: sans-serif;
-  font-size: 11px;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Liste des cours */
-.measure-staff {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.empty-measure-text {
-  color: #aaa;
-  font-style: italic;
-  font-size: 14px;
-  padding-top: 8px;
-}
-
-/* Un élément cours (Ligne épurée) */
-.staff-node {
-  display: grid;
-  grid-template-columns: 140px 1fr 120px;
-  align-items: center;
-  padding: 18px 25px;
+.colonne-jour {
   background-color: #ffffff;
   border: 1px solid #e5e4e0;
-  border-radius: 2px;
-  transition: transform 0.2s, border-color 0.2s;
+  border-top: 2px solid #111111; /* Ligne noire d'en-tête */
+  padding: 15px 10px;
+  min-height: 420px;
 }
 
-.staff-node:hover {
-  border-color: #d4af37; /* 🪙 S'illumine en Or au survol comme le catalogue */
-  transform: translateX(4px);
-}
-
-.node-time {
+.titre-jour {
   font-family: sans-serif;
-  font-size: 14px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #111111;
   font-weight: 600;
-  color: #111;
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f5f4f0;
 }
 
-.node-title {
-  font-size: 18px;
+.liste-cours-jour {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Les petites boîtes de leçons */
+.carte-cours-planning {
+  background-color: #ffffff;
+  border: 1px solid #e5e4e0;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.carte-cours-planning:hover {
+  border-color: #d4af37;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.03);
+}
+
+.carte-cours-planning.selectionnee {
+  border-color: #d4af37;
+  background-color: #fcfbfa;
+}
+
+.type-cours-tag {
+  font-family: sans-serif;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #a39264;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.carte-cours-planning h4 {
+  font-family: 'Georgia', serif;
+  font-size: 14px;
   font-weight: normal;
   margin: 0 0 6px 0;
-  letter-spacing: 0.5px;
-}
-
-.node-sub {
-  font-family: sans-serif;
-  font-size: 13px;
-  color: #555;
-  margin: 0;
-}
-
-.node-sub strong {
   color: #111;
+  line-height: 1.3;
 }
 
-.node-sub .separator {
-  margin: 0 8px;
-  color: #ccc;
+.horaire-cours {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  font-family: sans-serif;
+  margin-bottom: 10px;
 }
 
-/* Badges de Statuts Discrets */
-.node-status {
-  text-align: right;
+.footer-cours-planning {
+  font-size: 11px;
+  color: #666;
+  font-family: sans-serif;
 }
 
+.case-vide-planning {
+  font-size: 11px;
+  color: #bbb;
+  text-align: center;
+  font-style: italic;
+  padding: 25px 0;
+  border: 1px dashed #eae9e4;
+}
+
+/* 🛎️ LE TIROIR DE SÉANCE COMME POUR LE PROF */
+.tiroir-details-planning {
+  margin-top: 40px;
+  background-color: #ffffff;
+  border: 1px solid #d4af37;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+  max-width: 600px;
+  border-left: 4px solid #d4af37;
+}
+
+.close-tiroir-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #999;
+}
+.close-tiroir-btn:hover { color: #111; }
+
+/* Badges de Statuts Étudiant Discrets */
 .status-dot {
   font-family: sans-serif;
   display: inline-block;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 10px;
-  font-weight: 600;
   border-radius: 2px;
+  font-weight: 600;
 }
+.status-dot.approved { background-color: #e6f4ea; color: #137333; }
+.status-dot.pending { background-color: #fef7e0; color: #b06000; }
 
-.status-dot.approved {
-  background-color: #e6f4ea;
-  color: #137333;
-}
-
-.status-dot.pending {
-  background-color: #fef7e0;
-  color: #b06000;
-}
-
-/* Alertes */
 .art-error {
   background-color: #fff5f5;
   color: #c53030;
@@ -200,23 +207,9 @@
   border-left: 2px solid #c53030;
 }
 
-/* Mode Mobile */
-@media (max-width: 768px) {
-  .art-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-  .measure-row {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 25px 0;
-  }
-  .staff-node {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .node-status {
-    text-align: left;
-  }
+@media (max-width: 1024px) {
+  .grille-pupitre { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+}
+@media (max-width: 600px) {
+  .grille-pupitre { grid-template-columns: 1fr; }
 }

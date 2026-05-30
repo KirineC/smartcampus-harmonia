@@ -4,35 +4,32 @@ import api from '../services/api';
 import './MonPlanning.css';
 
 export default function MonPlanning() {
-  const [inscriptions, setInscriptions] = useState([]);
+  const [inscriptions, setInscriptions] = useState([]); // Pour l'étudiant
+  const [coursSemaine, setCoursSemaine] = useState({}); // Pour l'enseignant/étudiant trié
+  const [coursSelectionne, setCoursSelectionne] = useState(null); 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
   const navigate = useNavigate();
+  const joursSemaine = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
-  const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-
-  // 🔐 Authentification réelle restaurée
+  // 🔐 1. Authentification globale
   useEffect(() => {
-    const checkAuth = () => {
-      const userData = localStorage.getItem('user');
-      if (!userData) {
-        navigate('/'); // Renvoie au Login si pas connecté
-        return;
-      }
-      const userObj = JSON.parse(userData);
-      setUser(userObj);
-      
-      if (userObj.role !== 'etudiant') {
-        setError('Accès réservé aux membres de l’Académie.');
-        return;
-      }
-    };
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      navigate('/');
+      return;
+    }
+    const userObj = JSON.parse(userData);
+    setUser(userObj);
 
-    checkAuth();
+    if (userObj.role === 'enseignant') {
+      chargerPlanningProf(userObj.id);
+    }
   }, [navigate]);
 
-  // 🔄 Récupération des cours via le PHP
+  // 🔄 2. Partie ÉTUDIANT : Récupération et tri des cours
   useEffect(() => {
     const fetchInscriptions = async () => {
       try {
@@ -40,11 +37,34 @@ export default function MonPlanning() {
         const response = await api.get('/index.php?mes_inscriptions=1');
         
         if (Array.isArray(response.data)) {
-          const sorted = response.data.sort((a, b) => {
-            if (a.jour_semaine !== b.jour_semaine) return a.jour_semaine - b.jour_semaine;
-            return a.heure_debut.localeCompare(b.heure_debut);
+          // Dictionnaire de conversion chiffre -> texte
+          const mapChiffreEnJour = { 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi' };
+          
+          const agencement = {};
+          joursSemaine.forEach(j => agencement[j] = []);
+
+          response.data.forEach(item => {
+            const jourTextuel = mapChiffreEnJour[item.jour_semaine];
+            if (agencement[jourTextuel]) {
+              agencement[jourTextuel].push({
+                id: item.id,
+                titre: item.titre,
+                code: item.nom_salle || 'Studio',
+                type: item.type_cours || 'Collectif',
+                debut: item.heure_debut ? item.heure_debut.substring(0, 5) : '00:00',
+                fin: item.heure_fin ? item.heure_fin.substring(0, 5) : '00:00',
+                prof: item.prof_nom || 'Maître Indisponible',
+                statut: item.statut_inscription
+              });
+            }
           });
-          setInscriptions(sorted);
+
+          // Tri chronologique des heures
+          Object.keys(agencement).forEach(j => {
+            agencement[j].sort((a, b) => a.debut.localeCompare(b.debut));
+          });
+
+          setCoursSemaine(agencement);
         }
       } catch (err) {
         console.error(err);
@@ -54,100 +74,168 @@ export default function MonPlanning() {
       }
     };
 
-    if (user) fetchInscriptions();
+    if (user && user.role === 'etudiant') {
+      fetchInscriptions();
+    }
   }, [user]);
 
-  // Regroupement des cours par jour
-  const groupedCourses = inscriptions.reduce((acc, current) => {
-    const day = current.jour_semaine || 1;
-    if (!acc[day]) acc[day] = [];
-    acc[day].push(current);
-    return acc;
-  }, {});
+  // 👨‍🏫 3. Partie ENSEIGNANT : Récupération et tri des cours
+  const chargerPlanningProf = async (profUserId) => {
+    if (!profUserId) return;
+    try {
+      setLoading(true);
+      setError(''); 
+      const response = await api.get(`/index.php?liste_eleves_prof=${profUserId}`);
+      if (response.data && response.data.success) {
+        const agencement = {};
+        joursSemaine.forEach(j => agencement[j] = []);
 
-  // Fonction pour calculer le temps total de cours par jour (En heures)
-  const calculateDailyTempo = (courses) => {
-    if (!courses) return 0;
-    return courses.reduce((total, c) => {
-      const duration = (new Date(`1970-01-01T${c.heure_fin}`) - new Date(`1970-01-01T${c.heure_debut}`)) / 3600000;
-      return total + duration;
-    }, 0).toFixed(1);
+        const mapChiffreEnJour = { 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi' };
+        const coursVisites = new Set();
+        
+        response.data.etudiants.forEach(item => {
+          const cleUnique = `${item.cours_id}-${item.jour_semaine}-${item.heure_debut}`;
+          if (!coursVisites.has(cleUnique) && item.jour_semaine) {
+            coursVisites.add(cleUnique);
+            const jourTextuel = mapChiffreEnJour[item.jour_semaine];
+
+            if (agencement[jourTextuel]) {
+              agencement[jourTextuel].push({
+                id: item.cours_id,
+                titre: item.cours,
+                code: item.code_cours || 'HAR-90',
+                type: item.type_cours || 'Masterclass',
+                debut: item.heure_debut ? item.heure_debut.substring(0, 5) : '00:00',
+                fin: item.heure_fin ? item.heure_fin.substring(0, 5) : '00:00',
+                max: item.capacite_max,
+                inscrits: item.inscrits_actifs
+              });
+            }
+          }
+        });
+
+        Object.keys(agencement).forEach(j => {
+          agencement[j].sort((a, b) => a.debut.localeCompare(b.debut));
+        });
+
+        setCoursSemaine(agencement);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Impossible de charger l'emploi du temps.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formatTime = (time) => time ? time.substring(0, 5).replace(':', 'h') : '?';
-
-  if (loading) return <div className="conservatoire-loading">Chargement de votre pupitre...</div>;
+  if (loading) return <div className="conservatoire-loading">Chargement du pupitre...</div>;
 
   return (
     <div className="harmonia-art-wrapper">
-      {/* Grand En-tête Haute Couture */}
+      
+      {/* ============================================================ */}
+      {/* EN-TÊTE ADAPTATIVE UNIQUE                                    */}
+      {/* ============================================================ */}
       <header className="art-header">
         <div className="brand-block">
           <span className="sc-tag">SMARTCAMPUS // HARMONIA</span>
-          <h1 className="main-art-title">Mon Registre d'Études</h1>
-          <p className="student-signature">Pupitre virtuel de {user?.prenom} — Session Académique</p>
+          <h1 className="main-art-title">
+            {user?.role === 'etudiant' ? "Mon Registre d'Études" : "Votre Chaire d'Enseignement"}
+          </h1>
+          <p className="student-signature">
+            {user?.role === 'etudiant' 
+              ? `Pupitre virtuel de ${user?.prenom} — Session Académique` 
+              : `Planification hebdomadaire des cours du Pr. ${user?.nom}`}
+          </p>
         </div>
-        <div className="quick-actions">
-          <button className="minimal-btn" onClick={() => navigate('/catalogue')}>
-            + Solliciter une Masterclass
-          </button>
-        </div>
+        {user?.role === 'etudiant' && (
+          <div className="quick-actions">
+            <button className="minimal-btn" onClick={() => navigate('/catalogue')}>
+              + Solliciter une Masterclass
+            </button>
+          </div>
+        )}
       </header>
 
       {error && <div className="art-error">{error}</div>}
 
-      {/* Liste Chronologique Style Partition */}
-      <main className="partition-stream">
-        {[1, 2, 3, 4, 5].map(dayNum => {
-          const dailyCourses = groupedCourses[dayNum] || [];
-          const tempoHours = calculateDailyTempo(dailyCourses);
-
-          return (
-            <div key={dayNum} className="measure-row">
-              {/* Colonne de gauche : Le Jour et son "Tempo" */}
-              <div className="measure-meta">
-                <h2 className="measure-day">{dayNames[dayNum]}</h2>
-                <span className="measure-tempo-indicator">
-                  Tempo : {tempoHours}h de pratique
-                </span>
-              </div>
-
-              {/* Colonne de droite : Les lignes de portée (Cours) */}
-              <div className="measure-staff">
-                {dailyCourses.length === 0 ? (
-                  <div className="empty-measure-text">Silence — Aucune répétition programmée.</div>
-                ) : (
-                  dailyCourses.map(cours => (
-                    <div key={cours.id} className="staff-node">
-                      {/* Heure */}
-                      <div className="node-time">
-                        {formatTime(cours.heure_debut)} — {formatTime(cours.heure_fin)}
-                      </div>
-
-                      {/* Infos de la discipline */}
-                      <div className="node-details">
-                        <h3 className="node-title">{cours.titre}</h3>
-                        <p className="node-sub">
-                          <span>🏛️ Lieu : <strong>{cours.nom_salle || 'Studio libre'}</strong></span>
-                          <span className="separator">•</span>
-                          <span>👨‍🏫 Maître : <strong>Pr. {cours.prof_nom}</strong></span>
-                        </p>
-                      </div>
-
-                      {/* Statut Élégant */}
-                      <div className="node-status">
-                        <span className={`status-dot ${cours.statut_inscription === 'Validée' ? 'approved' : 'pending'}`}>
-                          {cours.statut_inscription === 'Validée' ? 'Confirmé' : 'En attente'}
-                        </span>
-                      </div>
+      {/* ============================================================ */}
+      {/* LA GRILLE DE PUPITRE UNIFIÉE (ÉTUDIANT & ENSEIGNANT)         */}
+      {/* ============================================================ */}
+      <div className="grille-pupitre">
+        {joursSemaine.map(jour => (
+          <div key={jour} className="colonne-jour">
+            <div className="titre-jour">{jour}</div>
+            <div className="liste-cours-jour">
+              
+              {coursSemaine[jour]?.map(c => {
+                const estEtudiant = user?.role === 'etudiant';
+                return (
+                  <div 
+                    key={c.id} 
+                    className={`carte-cours-planning ${coursSelectionne?.id === c.id ? 'selectionnee' : ''}`}
+                    onClick={() => setCoursSelectionne(c)}
+                  >
+                    <span className="type-cours-tag">{c.type}</span>
+                    <h4>{c.titre}</h4>
+                    <div className="horaire-cours">{c.debut} — {c.fin}</div>
+                    
+                    <div className="footer-cours-planning">
+                      {estEtudiant ? (
+                        <>
+                          <div style={{ marginBottom: '6px', color: '#666' }}>📍 {c.code}</div>
+                          <span className={`status-dot ${c.statut === 'Validée' ? 'approved' : 'pending'}`} style={{ fontSize: '9px', padding: '2px 6px' }}>
+                            {c.statut === 'Validée' ? 'Confirmé' : 'En attente'}
+                          </span>
+                        </>
+                      ) : (
+                        <>📍 Salle {c.code} • <span style={{ color: '#a39264' }}>{c.inscrits}/{c.max} él.</span></>
+                      )}
                     </div>
-                  ))
-                )}
-              </div>
+                  </div>
+                );
+              })}
+
+              {(!coursSemaine[jour] || coursSemaine[jour].length === 0) && (
+                <div className="case-vide-planning">Aucun enseignement</div>
+              )}
+
             </div>
-          );
-        })}
-      </main>
+          </div>
+        ))}
+      </div>
+
+      {/* ============================================================ */}
+      {/* LE TIROIR DE DÉTAIL COMMUN OPTIMISÉ                          */}
+      {/* ============================================================ */}
+      {coursSelectionne && (
+        <div className="tiroir-details-planning animate-fade">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+            <div>
+              <span className="sc-tag" style={{ color: '#a39264' }}>Fiche de Séance</span>
+              <h2 style={{ fontFamily: 'Georgia', fontWeight: 'normal', margin: '5px 0' }}>{coursSelectionne.titre}</h2>
+              <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>Type : {coursSelectionne.type} • {user?.role === 'etudiant' ? `Lieu : ${coursSelectionne.code}` : `Salle ${coursSelectionne.code}`}</p>
+            </div>
+            <button className="close-tiroir-btn" onClick={() => setCoursSelectionne(null)}>✕</button>
+          </div>
+
+          <div style={{ marginTop: '20px', background: '#fcfbfa', padding: '15px', border: '1px solid #eae9e4' }}>
+            <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>⏰ Horaires : <strong>{coursSelectionne.debut} à {coursSelectionne.fin}</strong></p>
+            
+            {user?.role === 'etudiant' ? (
+              <p style={{ margin: 0, fontSize: '14px' }}>👨‍🏫 Maître de Conférence : <strong>Pr. {coursSelectionne.prof}</strong></p>
+            ) : (
+              <>
+                <p style={{ margin: '0 0 15px 0', fontSize: '14px' }}>👥 Inscrits : <strong>{coursSelectionne.inscrits} / {coursSelectionne.max} places</strong></p>
+                <button onClick={() => navigate('/enseignant/inscriptions')} className="minimal-btn" style={{ width: '100%', fontSize: '12px', padding: '10px' }}>
+                  📄 Ouvrir le registre pour faire l'appel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

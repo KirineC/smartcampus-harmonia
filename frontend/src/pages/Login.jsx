@@ -14,6 +14,7 @@ export default function Login() {
     setError('');
 
     try {
+      console.log(api.defaults.baseURL);
       const response = await api.post('/index.php', {
         action: 'login',
         email: email,
@@ -26,7 +27,7 @@ export default function Login() {
         localStorage.setItem('user', JSON.stringify(response.data.user || { prenom: "Étudiant", role: "etudiant" }));
         
         // Redirection vers le catalogue
-        navigate('/catalogue');
+        navigate('/dashboard');
       } else {
         setError(response.data.error || "Identifiants académiques invalides.");
       }

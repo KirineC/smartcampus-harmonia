@@ -43,26 +43,24 @@ if (json_last_error() !== JSON_ERROR_NONE || !$data) {
 
 // 5. Récupération de la route
 $request = $_SERVER['REQUEST_URI'];
-
-// Nettoyage du chemin du backend
 $request = str_replace('/smartcampus-harmonia/backend', '', $request);
 $request = strtok($request, '?');
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 // 6. Routeur
-
 $isIndex = ($request === '/index.php');
+$isRoot = ($request === '/');
 $isInscriptions = preg_match('/\/api\/inscriptions/', $request);
 $isAuthLogin = preg_match('/\/api\/auth\/login/', $request);
 $isCours = preg_match('/\/api\/cours/', $request);
 
-// --- INSCRIPTIONS : inscription à un cours ---
+// --- INSCRIPTIONS : inscription / annulation via POST ---
 if (($isInscriptions || $isIndex) && $method === 'POST' && isset($data['cours_id'])) {
     include __DIR__ . '/routes/inscriptions.php';
 }
 
-// --- INSCRIPTIONS : annulation d'une inscription ---
+// --- INSCRIPTIONS : annulation via DELETE, gardée en secours ---
 elseif (($isInscriptions || $isIndex) && $method === 'DELETE') {
     include __DIR__ . '/routes/inscriptions.php';
 }
@@ -75,6 +73,11 @@ elseif (($isInscriptions || $isIndex) && $method === 'GET' && isset($_GET['mes_i
 // --- AUTHENTIFICATION ---
 elseif (($isAuthLogin || $isIndex) && $method === 'POST' && isset($data['action']) && $data['action'] === 'login') {
     include __DIR__ . '/routes/authentification.php';
+}
+
+// --- PRATIQUE : enregistrement journal / métronome ---
+elseif (($isIndex || $isRoot) && $method === 'POST' && isset($data['action']) && $data['action'] === 'enregistrer_pratique') {
+    include __DIR__ . '/routes/pratique.php';
 }
 
 // --- COURS : récupération des cours ---

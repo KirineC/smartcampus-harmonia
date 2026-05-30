@@ -1,0 +1,362 @@
+.dashboard-wrapper {
+  background-color: #f4f2ed; /* soit #fcfbfa soit  */
+  color: #111111;
+  min-height: 100vh;
+  padding: 60px 40px;
+  font-family: 'Georgia', serif;
+}
+
+.welcome-section {
+  margin-bottom: 50px;
+  border-bottom: 1px solid #e5e4e0;
+  padding-bottom: 30px;
+}
+
+.welcome-title {
+  font-size: 42px;
+  font-weight: normal;
+  margin: 10px 0;
+  letter-spacing: -0.5px;
+}
+
+.academic-status {
+  font-style: italic;
+  color: #555;
+  font-size: 16px;
+}
+
+/* Grille des fonctionnalités */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 60px;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border: 1px solid #e5e4e0;
+  padding: 30px;
+  border-radius: 2px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+/* Le relief magique au survol */
+.dashboard-card:hover {
+  transform: translateY(-4px); /* La carte monte légèrement */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04); /* L'ombre s'adoucit et s'étend */
+  border-color: #d4af37; /* Les contours s'illuminent discrètement en Or */
+}
+
+.card-title {
+  font-size: 22px;
+  font-weight: normal;
+  margin: 0 0 5px 0;
+  letter-spacing: 0.5px;
+}
+
+.card-subtitle {
+  font-family: sans-serif;
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+}
+
+/* Barre de progression (Métronome) */
+.progress-container {
+  background-color: #f0eee9;
+  height: 4px;
+  border-radius: 2px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background-color: #d4af37; /* L'Or du Conservatoire */
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.metronome-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #555;
+}
+
+/* Programme du jour mini */
+.mini-program-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding-top: 10px;
+}
+
+.program-time {
+  font-family: sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #d4af37;
+}
+
+.program-details h3 {
+  font-size: 16px;
+  font-weight: normal;
+  margin: 0 0 4px 0;
+}
+
+.program-details p {
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+/* Les Portes de Navigation */
+.section-subtitle {
+  font-size: 14px;
+  font-family: sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+  margin-bottom: 25px;
+}
+
+.gates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.gate-card {
+  background: #ffffff;
+  border: 1px solid #e5e4e0;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gate-card:hover {
+  border-color: #111;
+  transform: translateY(-3px);
+}
+
+.gate-number {
+  font-size: 28px;
+  color: #d4af37;
+  display: block;
+  margin-bottom: 10px;
+  font-family: 'Times New Roman', serif;
+}
+
+.gate-content h3 {
+  font-size: 20px;
+  font-weight: normal;
+  margin: 0 0 10px 0;
+}
+
+.gate-content p {
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 90%;
+}
+
+.gate-arrow {
+  font-size: 24px;
+  color: #ccc;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.gate-card:hover .gate-arrow {
+  color: #111;
+  transform: translateX(5px);
+}
+
+/* Bouton d'ajout de pratique */
+.add-practice-btn {
+  background: transparent;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  padding: 6px 14px;
+  font-family: sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.add-practice-btn:hover {
+  background-color: #d4af37;
+  color: #ffffff;
+}
+
+/* Structure du Modal de Luxe */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* Fond assombri subtil */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-top: 4px solid #d4af37; /* Ligne d'or signature */
+  padding: 35px;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 2px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.modal-header h2 {
+  font-size: 22px;
+  font-weight: normal;
+  margin: 0;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.close-modal-btn:hover {
+  color: #111;
+}
+
+/* Formulaire interne du Modal */
+.form-group-chic {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group-chic label {
+  font-family: sans-serif;
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group-chic input, 
+.form-group-chic select, 
+.form-group-chic textarea {
+  padding: 10px 12px;
+  border: 1px solid #e5e4e0;
+  border-radius: 2px;
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  outline: none;
+  background-color: #faf9f6;
+}
+
+.form-group-chic input:focus, 
+.form-group-chic select:focus, 
+.form-group-chic textarea:focus {
+  border-color: #d4af37;
+  background-color: #ffffff;
+}
+
+/* Bouton Soumettre */
+.submit-practice-btn {
+  width: 100%;
+  background-color: #111111;
+  color: #ffffff;
+  padding: 12px;
+  border: none;
+  border-radius: 2px;
+  font-family: sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.submit-practice-btn:hover {
+  background-color: #d4af37;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   FONDS TEXTURÉS COMPLETS POUR LES CARTES (FILIGRANES DE LUXE)
+   ========================================================================== */
+
+/* Applique un positionnement relatif pour l'overlay sur toutes les cartes */
+.dashboard-card, .gate-card {
+  position: relative;
+  overflow: hidden; /* Empêche tout dépassement */
+}
+
+/* 1. Carte Métronome (1ère de la grille) */
+.dashboard-grid .dashboard-card:nth-child(1) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/metronome.jpg');
+  background-size: cover; /* Occupe tout l'espace */
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 2. Carte Programme (2ème de la grille) */
+.dashboard-grid .dashboard-card:nth-child(2) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/programme.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 3. Porte Catalogue (1ère des démarches) */
+.gates-grid .gate-card:nth-child(1) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/catalogue.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* 4. Porte Planning (2ème des démarches) */
+.gates-grid .gate-card:nth-child(2) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
+    url('/img/planning.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

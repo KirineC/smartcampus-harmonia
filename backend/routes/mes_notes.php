@@ -58,7 +58,7 @@ try {
         JOIN cours c ON i.cours_id = c.id
         JOIN enseignants ens ON c.enseignant_id = ens.id
         JOIN utilisateurs u_prof ON ens.utilisateur_id = u_prof.id
-        LEFT JOIN notes n ON n.inscription_id = i.id
+        LEFT JOIN notes n ON n.inscription_id = i.id AND n.est_valide = 1
         WHERE i.etudiant_id = ?
         AND i.statut_inscription = 'Validée'
         ORDER BY c.jour_semaine, c.heure_debut, c.titre

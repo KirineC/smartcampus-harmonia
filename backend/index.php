@@ -144,6 +144,16 @@ elseif (
 ) {
     include __DIR__ . '/routes/inscriptions.php';
 }
+// Actions Inscriptions (Annuler une demande en attente)
+elseif (
+    ($isInscriptions || $isIndex)
+    && $method === 'POST'
+    && isset($data['action'])
+    && $data['action'] === 'annuler_inscription'
+    && isset($data['cours_id'])
+) {
+    include __DIR__ . '/routes/inscriptions.php';
+}
 
 // Actions Inscriptions (Annuler en secours)
 elseif (

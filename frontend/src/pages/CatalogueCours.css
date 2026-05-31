@@ -1,6 +1,6 @@
 .catalogue-container {
   min-height: 100vh;
-  background-color: #f4f2ed; /* soit #fcfbfa soit  */;
+  background-color: #f4f2ed;
   font-family: 'Georgia', serif;
   padding: 40px 20px;
 }
@@ -16,6 +16,29 @@
   margin-bottom: 5px;
   font-weight: normal;
   letter-spacing: 2px;
+}
+
+.catalogue-header p {
+  font-style: italic;
+  color: #666;
+  font-size: 14px;
+}
+
+.catalogue-loading {
+  text-align: center;
+  margin-top: 100px;
+  font-family: Georgia, serif;
+}
+
+.catalogue-message {
+  max-width: 700px;
+  margin: 0 auto 25px auto;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-left: 4px solid #d4af37;
+  font-family: sans-serif;
+  font-size: 14px;
 }
 
 /* Barre de recherche chic */
@@ -64,7 +87,15 @@
 
 .course-card:hover {
   transform: translateY(-5px);
-  border-top-color: #d4af37; /* La carte s'illumine en Or au survol */
+  border-top-color: #d4af37;
+}
+
+.course-card-content {
+  flex: 1;
+}
+
+.course-card-actions {
+  margin-top: 15px;
 }
 
 .course-type {
@@ -82,6 +113,20 @@
   font-weight: normal;
 }
 
+.course-status-pill {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .course-info {
   font-family: sans-serif;
   font-size: 13px;
@@ -93,10 +138,28 @@
   color: #111;
 }
 
+.instrument-required {
+  color: #a39264 !important;
+}
+
+.course-capacity {
+  margin-top: 15px;
+  border-top: 1px dashed #ddd;
+  padding-top: 10px;
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #555;
+}
+
+.course-capacity strong {
+  color: #111;
+}
+
 /* Bouton d'inscription */
 .register-button {
   margin-top: 20px;
   width: 100%;
+  min-height: 44px;
   padding: 12px;
   background-color: #111;
   color: #fff;
@@ -107,10 +170,50 @@
   cursor: pointer;
   text-transform: uppercase;
   transition: background-color 0.2s;
+  font-family: sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .register-button:hover {
-  background-color: #d4af37; /* Devient Or au survol */
+  background-color: #d4af37;
+}
+
+.register-button-pending {
+  background-color: #d4af37;
+  color: #111;
+}
+
+.register-button-pending:hover {
+  background-color: #c7a431;
+}
+
+/* Badge non cliquable quand l'inscription est validée */
+.accepted-inscription-badge {
+  background-color: #137333;
+  color: #fff;
+  opacity: 0.95;
+  cursor: default;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+.accepted-inscription-badge:hover {
+  background-color: #137333;
+}
+
+/* Bouton bloqué quand la demande est refusée */
+.refused-inscription-button {
+  background-color: #b3261e;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refused-inscription-button:hover {
+  background-color: #b3261e;
 }
 
 /* 🔒 Bouton bloqué pour non-correspondance de pupitre */
@@ -122,4 +225,8 @@
   text-transform: uppercase;
   box-shadow: none !important;
   transform: none !important;
+}
+
+.register-button.disabled-rock:hover {
+  background-color: #f5f4f0 !important;
 }

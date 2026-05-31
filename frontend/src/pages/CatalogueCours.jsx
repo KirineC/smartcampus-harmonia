@@ -10,7 +10,6 @@ export default function CatalogueCours() {
   const [message, setMessage] = useState('');
   const [inscriptionLoading, setInscriptionLoading] = useState(null);
 
-  // 🎯 1. Récupération de l'instrument majeur de l'élève connecté
   const userData = localStorage.getItem('user');
   const user = userData ? JSON.parse(userData) : null;
   const etudiantInstrument = user?.instrument_majeur || '';
@@ -30,6 +29,7 @@ export default function CatalogueCours() {
   const fetchMesInscriptions = async () => {
     try {
       const response = await api.get('/index.php?mes_inscriptions=1');
+
       if (Array.isArray(response.data)) {
         setMesInscriptions(response.data);
       }
@@ -61,6 +61,7 @@ export default function CatalogueCours() {
       }
     } catch (err) {
       console.error("Erreur inscription:", err);
+
       if (err.response?.status === 401) {
         setMessage("⚠️ Vous devez être connecté pour vous inscrire.");
       } else {
@@ -82,7 +83,7 @@ export default function CatalogueCours() {
       });
 
       if (response.data.success) {
-        setMessage('✅ Demande ou inscription annulée avec succès.');
+        setMessage(response.data.message || '✅ Demande d’inscription annulée avec succès.');
         await fetchCours();
         await fetchMesInscriptions();
       } else {
@@ -90,6 +91,7 @@ export default function CatalogueCours() {
       }
     } catch (err) {
       console.error("Erreur annulation:", err);
+
       if (err.response?.status === 401) {
         setMessage("⚠️ Vous devez être connecté.");
       } else {
@@ -108,6 +110,7 @@ export default function CatalogueCours() {
 
   const getStatutStyle = (statut) => {
     if (!statut) return null;
+
     const statutLower = statut.toLowerCase();
 
     if (statutLower.includes('attente')) {
@@ -152,7 +155,7 @@ export default function CatalogueCours() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Georgia' }}>
+      <div className="catalogue-loading">
         Chargement du pupitre académique...
       </div>
     );
@@ -162,22 +165,13 @@ export default function CatalogueCours() {
     <div className="catalogue-container">
       <div className="catalogue-header">
         <h1>Catalogue des Enseignements</h1>
-        <p style={{ fontStyle: 'italic', color: '#666', fontSize: '14px' }}>
+        <p>
           Année Académique 2026 — Répétitions & Classes Terminales
         </p>
       </div>
 
       {message && (
-        <div style={{
-          maxWidth: '700px',
-          margin: '0 auto 25px auto',
-          padding: '12px 16px',
-          background: '#fff',
-          border: '1px solid #ddd',
-          borderLeft: '4px solid #d4af37',
-          fontFamily: 'sans-serif',
-          fontSize: '14px'
-        }}>
+        <div className="catalogue-message">
           {message}
         </div>
       )}
@@ -202,10 +196,9 @@ export default function CatalogueCours() {
           const estValidee = inscription?.statut_inscription?.toLowerCase().includes('valid');
           const estRefusee = inscription?.statut_inscription?.toLowerCase().includes('refus');
 
-          // 🎯 2. Détection du mauvais instrument
-          const isWrongInstrument = 
-            c.instrument_requis && 
-            etudiantInstrument && 
+          const isWrongInstrument =
+            c.instrument_requis &&
+            etudiantInstrument &&
             c.instrument_requis.toLowerCase() !== etudiantInstrument.toLowerCase();
 
           return (
@@ -217,7 +210,7 @@ export default function CatalogueCours() {
                 background: statutInfo ? statutInfo.background : undefined
               }}
             >
-              <div>
+              <div className="course-card-content">
                 <div className="course-type">
                   Cours {c.type_cours} • Semestre {c.semestre}
                 </div>
@@ -226,19 +219,10 @@ export default function CatalogueCours() {
 
                 {statutInfo && (
                   <div
+                    className="course-status-pill"
                     style={{
-                      display: 'inline-block',
-                      marginBottom: '12px',
-                      padding: '6px 10px',
-                      borderRadius: '999px',
-                      background: '#fff',
                       color: statutInfo.color,
-                      border: `1px solid ${statutInfo.border}`,
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      fontFamily: 'sans-serif',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      borderColor: statutInfo.border
                     }}
                   >
                     {statutInfo.label}
@@ -249,9 +233,9 @@ export default function CatalogueCours() {
                   🎵 Maître de classe : <strong>Pr. {c.prenom} {c.prof_nom}</strong>
                 </div>
 
-                {/* 🎯 3. Affichage du badge d'instrument requis sur la carte */}
                 <div className="course-info">
-                  🎻 Pupitre requis : <strong style={{ color: c.instrument_requis ? '#a39264' : '#555' }}>
+                  🎻 Pupitre requis :{' '}
+                  <strong className={c.instrument_requis ? 'instrument-required' : ''}>
                     {c.instrument_requis || "Tous publics"}
                   </strong>
                 </div>
@@ -261,79 +245,55 @@ export default function CatalogueCours() {
                 </div>
 
                 <div className="course-info">
-                  📅 Session : <strong>Jour {c.jour_semaine} • {c.heure_debut.substring(0, 5)} - {c.heure_fin.substring(0, 5)}</strong>
+                  📅 Session :{' '}
+                  <strong>
+                    Jour {c.jour_semaine} • {c.heure_debut.substring(0, 5)} - {c.heure_fin.substring(0, 5)}
+                  </strong>
                 </div>
               </div>
 
-              <div>
-                <div
-                  className="course-info"
-                  style={{
-                    marginTop: '15px',
-                    borderTop: '1px dashed #ddd',
-                    paddingTop: '10px'
-                  }}
-                >
+              <div className="course-card-actions">
+                <div className="course-capacity">
                   👥 Places occupées : <strong>{c.places_occupees} / {c.capacite_max}</strong>
                 </div>
 
                 {estEnAttente && (
                   <button
-                    className="register-button"
+                    className="register-button register-button-pending"
                     onClick={() => handleAnnulationInscription(c.id)}
                     disabled={inscriptionLoading === c.id}
-                    style={{
-                      backgroundColor: '#d4af37',
-                      color: '#111',
-                      opacity: inscriptionLoading === c.id ? 0.7 : 1
-                    }}
                   >
                     {inscriptionLoading === c.id ? 'Annulation...' : 'Annuler la demande'}
                   </button>
                 )}
 
-                {/* ✅ Version corrigée : */}
                 {estValidee && (
-                  <button
-                    className="register-button"
-                    onClick={() => handleAnnulationInscription(c.id)}
-                    disabled={inscriptionLoading === c.id}
-                    style={{
-                      backgroundColor: '#137333',
-                      opacity: inscriptionLoading === c.id ? 0.7 : 1
-                    }}
-                  >
-                    {inscriptionLoading === c.id ? 'Annulation...' : 'Annuler l’inscription'}
-                  </button>
+                  <div className="register-button accepted-inscription-badge">
+                    Inscription acceptée
+                  </div>
                 )}
 
                 {estRefusee && (
                   <button
-                    className="register-button"
+                    className="register-button refused-inscription-button"
                     disabled
-                    style={{
-                      backgroundColor: '#b3261e',
-                      opacity: 0.7,
-                      cursor: 'not-allowed'
-                    }}
                   >
                     Demande refusée
                   </button>
                 )}
 
-                {/* 🎯 4. Bouton de sollicitation dynamique & grisé selon l'instrument */}
                 {!inscription && (
                   <button
                     className={`register-button ${isWrongInstrument ? 'disabled-rock' : ''}`}
                     onClick={() => !isWrongInstrument && handleInscription(c.id)}
                     disabled={coursComplet || isWrongInstrument || inscriptionLoading === c.id}
-                    title={isWrongInstrument ? `Ce cours est exclusivement réservé au pupitre [${c.instrument_requis}]` : ''}
-                    style={{
-                      opacity: (coursComplet || isWrongInstrument) ? 0.4 : 1,
-                      cursor: (coursComplet || isWrongInstrument) ? 'not-allowed' : 'pointer'
-                    }}
+                    title={
+                      isWrongInstrument
+                        ? `Ce cours est exclusivement réservé au pupitre [${c.instrument_requis}]`
+                        : ''
+                    }
                   >
-                    {isWrongInstrument 
+                    {isWrongInstrument
                       ? `Réservé aux ${c.instrument_requis}s`
                       : coursComplet
                         ? 'Cours complet'

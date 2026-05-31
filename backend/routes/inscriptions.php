@@ -1,24 +1,79 @@
 <?php
 require_once __DIR__ . '/../models/Inscription.php';
 
-// Sécurité globale : il faut être connecté pour toucher aux inscriptions
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Non autorisé']);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Non autorisé'
+    ]);
     exit();
 }
 
 $inscriptionModel = new Inscription($pdo);
 
-// Fonction utilitaire : retrouver l'étudiant connecté
 function getEtudiantConnecte($pdo) {
-    $stmt = $pdo->prepare("SELECT id FROM etudiants WHERE utilisateur_id = ?");
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM etudiants
+        WHERE utilisateur_id = ?
+        LIMIT 1
+    ");
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+function annulerDemandeEnAttente($pdo, $etudiant_id, $cours_id) {
+    $stmtCheck = $pdo->prepare("
+        SELECT id, statut_inscription
+        FROM inscriptions
+        WHERE etudiant_id = ?
+        AND cours_id = ?
+        LIMIT 1
+    ");
+
+    $stmtCheck->execute([$etudiant_id, $cours_id]);
+    $inscription = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+    if (!$inscription) {
+        return [
+            'success' => false,
+            'error' => 'Aucune demande trouvée pour ce cours.'
+        ];
+    }
+
+    $statut = trim($inscription['statut_inscription']);
+
+    if ($statut === 'Validée') {
+        return [
+            'success' => false,
+            'error' => 'Une inscription déjà acceptée ne peut pas être annulée depuis le catalogue.'
+        ];
+    }
+
+    if ($statut !== 'En attente') {
+        return [
+            'success' => false,
+            'error' => 'Cette inscription ne peut plus être annulée.'
+        ];
+    }
+
+    $stmtDelete = $pdo->prepare("
+        DELETE FROM inscriptions
+        WHERE id = ?
+        LIMIT 1
+    ");
+
+    $stmtDelete->execute([$inscription['id']]);
+
+    return [
+        'success' => true,
+        'message' => 'Demande d’inscription annulée avec succès.'
+    ];
+}
+
 // ============================================================
-// CAS 1 : L'étudiant veut voir ses inscriptions (GET)
+// GET : consulter les inscriptions de l'étudiant
 // ============================================================
 if ($method === 'GET') {
     $stmt = $pdo->prepare("
@@ -30,7 +85,7 @@ if ($method === 'GET') {
             c.jour_semaine,
             c.heure_debut,
             c.heure_fin,
-            s.nom_salle, 
+            s.nom_salle,
             c.statut AS cours_statut
         FROM inscriptions i
         JOIN cours c ON i.cours_id = c.id
@@ -39,13 +94,14 @@ if ($method === 'GET') {
         WHERE e.utilisateur_id = ?
         ORDER BY c.jour_semaine, c.heure_debut
     ");
+
     $stmt->execute([$_SESSION['user_id']]);
     echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
     exit();
 }
 
 // ============================================================
-// CAS 2 : POST = inscription OU annulation (selon l'action)
+// POST : inscription ou annulation
 // ============================================================
 if ($method === 'POST') {
     $etudiant = getEtudiantConnecte($pdo);
@@ -60,59 +116,41 @@ if ($method === 'POST') {
     }
 
     $etudiant_id = $etudiant['id'];
-    $cours_id    = $data['cours_id'] ?? null;
-    $action      = $data['action']   ?? null;
+    $cours_id = $data['cours_id'] ?? null;
+    $action = $data['action'] ?? null;
 
     if (!$cours_id) {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'error'   => 'Données incomplètes (cours_id manquant).'
+            'error' => 'Données incomplètes : cours_id manquant.'
         ]);
         exit();
     }
 
-    // ----------------------------------------
-    // BRANCHE A : annulation explicite
-    // ----------------------------------------
     if ($action === 'annuler_inscription') {
-        $stmt = $pdo->prepare("
-            DELETE FROM inscriptions
-            WHERE etudiant_id = ?
-              AND cours_id    = ?
-        ");
-        $stmt->execute([$etudiant_id, $cours_id]);
-
-        if ($stmt->rowCount() > 0) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Inscription annulée avec succès.'
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'error'   => 'Aucune inscription trouvée pour ce cours.'
-            ]);
-        }
+        echo json_encode(annulerDemandeEnAttente($pdo, $etudiant_id, $cours_id));
         exit();
     }
 
-    // ----------------------------------------
-    // BRANCHE B : inscription normale
-    // ----------------------------------------
     $resultat = $inscriptionModel->inscrire($etudiant_id, $cours_id);
 
-    // 🔔 ON ENVOIE LA NOTIFICATION SI L'INSCRIPTION S'EST BIEN PASSÉE EN BDD
     if ($resultat && isset($resultat['success']) && $resultat['success'] === true) {
         try {
-            // 1. Récupération des données textuelles pour le message
             $stmtInfos = $pdo->prepare("
-                SELECT c.titre AS nom_cours, e.utilisateur_id AS prof_user_id, u.nom AS eleve_nom, u.prenom AS eleve_prenom
+                SELECT
+                    c.titre AS nom_cours,
+                    ens.utilisateur_id AS prof_user_id,
+                    u.nom AS eleve_nom,
+                    u.prenom AS eleve_prenom
                 FROM cours c
-                LEFT JOIN enseignants e ON c.enseignant_id = e.id
-                CROSS JOIN utilisateurs u 
-                WHERE c.id = ? AND u.id = ?
+                LEFT JOIN enseignants ens ON c.enseignant_id = ens.id
+                CROSS JOIN utilisateurs u
+                WHERE c.id = ?
+                AND u.id = ?
+                LIMIT 1
             ");
+
             $stmtInfos->execute([$cours_id, $_SESSION['user_id']]);
             $infos = $stmtInfos->fetch(PDO::FETCH_ASSOC);
 
@@ -120,23 +158,24 @@ if ($method === 'POST') {
                 $nomEleve = $infos['eleve_prenom'] . " " . $infos['eleve_nom'];
                 $msgProf = "🎻 Nouvelle demande : " . $nomEleve . " souhaite s'inscrire à votre cours de '" . $infos['nom_cours'] . "'.";
 
-                // 2. Insertion de la notification pour le professeur concerné
-                $stmtNotifProf = $pdo->prepare("INSERT INTO notifications (utilisateur_id, message, lu) VALUES (?, ?, 0)");
+                $stmtNotifProf = $pdo->prepare("
+                    INSERT INTO notifications (utilisateur_id, message, lu)
+                    VALUES (?, ?, 0)
+                ");
+
                 $stmtNotifProf->execute([$infos['prof_user_id'], $msgProf]);
             }
         } catch (PDOException $e) {
-            // Sécurité : Un échec de notification ne doit pas bloquer la réussite de l'inscription pour l'élève
             error_log("Erreur lors de l'envoi de la notification enseignant : " . $e->getMessage());
         }
     }
 
-    // Réponse finale envoyée à React
     echo json_encode($resultat);
     exit();
 }
 
 // ============================================================
-// CAS 3 : Annulation via DELETE (gardée en secours)
+// DELETE : annulation de secours
 // ============================================================
 if ($method === 'DELETE') {
     $etudiant = getEtudiantConnecte($pdo);
@@ -145,48 +184,29 @@ if ($method === 'DELETE') {
         http_response_code(403);
         echo json_encode([
             'success' => false,
-            'error'   => 'Cet utilisateur n\'est pas un étudiant.'
+            'error' => 'Cet utilisateur n\'est pas un étudiant.'
         ]);
         exit();
     }
 
-    $etudiant_id = $etudiant['id'];
-    $cours_id    = $data['cours_id'] ?? null;
+    $cours_id = $data['cours_id'] ?? $_GET['cours_id'] ?? null;
 
     if (!$cours_id) {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'error'   => 'Données incomplètes.'
+            'error' => 'Données incomplètes.'
         ]);
         exit();
     }
 
-    $stmt = $pdo->prepare("
-        DELETE FROM inscriptions
-        WHERE etudiant_id = ?
-          AND cours_id    = ?
-    ");
-    $stmt->execute([$etudiant_id, $cours_id]);
-
-    if ($stmt->rowCount() > 0) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Inscription annulée avec succès.'
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'error'   => 'Aucune inscription trouvée pour ce cours.'
-        ]);
-    }
+    echo json_encode(annulerDemandeEnAttente($pdo, $etudiant['id'], $cours_id));
     exit();
 }
 
-// Si la méthode HTTP n'est pas gérée
 http_response_code(405);
 echo json_encode([
     'success' => false,
-    'error'   => 'Méthode non autorisée.'
+    'error' => 'Méthode non autorisée.'
 ]);
 ?>

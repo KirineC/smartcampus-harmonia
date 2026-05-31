@@ -65,7 +65,12 @@ export default function TeacherDashboard() {
       {/* 📊 Zone des indicateurs clés épurée */}
       {stats && (
         <div style={{ display: 'flex', gap: '30px', marginBottom: '60px' }}>
-          <div style={{ flex: 1, background: '#ffffff', border: '1px solid #eae9e4', padding: '24px', borderRadius: '2px', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
+          
+          {/* 🎯 PREMIER RECTANGLE : Classes posées et background inline supprimé */}
+          <div 
+            className="dashboard-card audition-box" 
+            style={{ flex: 1, border: '1px solid #eae9e4', padding: '24px', borderRadius: '2px', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}
+          >
             <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#888', display: 'block', marginBottom: '6px', fontFamily: 'sans-serif' }}>
               Niveau d'Audition Global
             </span>
@@ -77,7 +82,11 @@ export default function TeacherDashboard() {
             </span>
           </div>
 
-          <div style={{ flex: 1, background: '#ffffff', border: '1px solid #eae9e4', padding: '24px', borderRadius: '2px', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}>
+          {/* 🎯 DEUXIÈME RECTANGLE : Classes posées et background inline supprimé */}
+          <div 
+            className="dashboard-card virtuoso-box" 
+            style={{ flex: 1, border: '1px solid #eae9e4', padding: '24px', borderRadius: '2px', boxShadow: '0 4px 15px rgba(0,0,0,0.01)' }}
+          >
             <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#888', display: 'block', marginBottom: '6px', fontFamily: 'sans-serif' }}>
               Virtuose de la Promotion
             </span>
@@ -88,6 +97,7 @@ export default function TeacherDashboard() {
               Meilleure évaluation enregistrée
             </span>
           </div>
+          
         </div>
       )}
 

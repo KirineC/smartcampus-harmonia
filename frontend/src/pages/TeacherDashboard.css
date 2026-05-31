@@ -135,3 +135,65 @@
   border-color: #d4af37 !important; /* Liseré d'or signature au survol */
   box-shadow: 0 10px 30px rgba(212, 175, 55, 0.04);
 }
+
+/* ==========================================================================
+   🖼️ FONDS TEXTURÉS COMPLETS — ESPACE ENSEIGNANT (CLASSES EXPLICITES)
+   ========================================================================== */
+
+/* Superposition de sécurité pour toutes les cartes */
+.dashboard-card, .menu-shortcut-card {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* --------------------------------------------------------------------------
+   📊 BLOCS DU HAUT (STATISTIQUES & RÉSULTATS)
+   -------------------------------------------------------------------------- */
+
+/* 1. Niveau d'audition global */
+.dashboard-card.audition-box {
+  background-color: #ffffff !important;
+  background-image: 
+    linear-gradient(90deg, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 0.75) 100%), 
+    url('/img/moyenne.png') !important;
+  background-size: contain !important;      /* 🎯 L'image s'adapte à la hauteur sans zoomer */
+  background-position: right center !important; /* 🎯 Calée parfaitement sur le côté droit */
+  background-repeat: no-repeat !important;
+}
+
+/* 2. Virtuose de la promotion */
+.dashboard-card.virtuoso-box {
+  background-color: #ffffff !important;
+  background-image: 
+    linear-gradient(90deg, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 0.75) 100%), 
+    url('/img/virtuose.jpg') !important;
+  background-size: contain !important;      /* 🎯 L'image s'adapte à la hauteur sans zoomer */
+  background-position: right center !important; /* 🎯 Calée parfaitement sur le côté droit */
+  background-repeat: no-repeat !important;
+}
+
+/* --------------------------------------------------------------------------
+   🚪 GRILLE INFÉRIEURE : LES REGISTRES & GRANDS LIVRES
+   -------------------------------------------------------------------------- */
+
+/* 3. Troisième rectangle (Bas Gauche) : Registre des Classes & Pupitres */
+.teacher-wrapper .gates-grid > div:nth-child(1),
+.teacher-wrapper .menu-shortcut-card:nth-child(1) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.97)), 
+    url('/img/registre.webp') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* 4. Quatrième rectangle (Bas Droite) : Saisie des Auditions de Semestre */
+.teacher-wrapper .gates-grid > div:nth-child(2),
+.teacher-wrapper .menu-shortcut-card:nth-child(2) {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.97)), 
+    url('/img/carnetnotes.webp') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:8889
--- Généré le : sam. 30 mai 2026 à 23:25
+-- Généré le : dim. 31 mai 2026 à 02:09
 -- Version du serveur : 8.0.44
 -- Version de PHP : 8.3.30
 
@@ -55,22 +55,23 @@ CREATE TABLE `cours` (
   `heure_fin` time DEFAULT NULL,
   `semestre` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
-  `statut` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Actif'
+  `statut` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Actif',
+  `instrument_requis` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `cours`
 --
 
-INSERT INTO `cours` (`id`, `code_cours`, `titre`, `type_cours`, `capacite_max`, `enseignant_id`, `salle_id`, `jour_semaine`, `heure_debut`, `heure_fin`, `semestre`, `description`, `statut`) VALUES
-(1, 'PIA-101', 'Piano Débutant', 'Individuel', 1, 1, 1, 2, '10:00:00', '11:00:00', 'Automne 2026', NULL, 'Actif'),
-(2, 'VIO-101', 'Violon Intermédiaire', 'Individuel', 1, 2, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', NULL, 'Actif'),
-(3, 'ORC-101', 'Orchestre Symphonique', 'Ensemble', 50, 1, 6, 1, '15:00:00', '18:00:00', 'Automne 2026', NULL, 'Actif'),
-(4, 'SOL-101', 'Solfège Débutant', 'Collectif', 25, 3, 3, 4, '09:00:00', '10:00:00', 'Automne 2026', NULL, 'Actif'),
-(5, 'HAR-101', 'Harmonie Avancée', 'Collectif', 20, 3, 3, 5, '14:00:00', '15:30:00', 'Automne 2026', NULL, 'Actif'),
-(6, 'CHAMB-101', 'Musique de Chambre', 'Ensemble', 8, 1, 2, 2, '18:00:00', '19:30:00', 'Automne 2026', NULL, 'Actif'),
-(7, 'FLU-101', 'Cours de Flûte Traversière', 'Individuel', 2, 1, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', 'Cours d\'initiation à la flûte traversière pour débutants.', 'Actif'),
-(9, 'HRM-202', 'Haute Contre et Chant Baroque', 'Masterclass', 20, 2, 2, 4, '10:30:00', '12:00:00', '1', '', 'Révoqué');
+INSERT INTO `cours` (`id`, `code_cours`, `titre`, `type_cours`, `capacite_max`, `enseignant_id`, `salle_id`, `jour_semaine`, `heure_debut`, `heure_fin`, `semestre`, `description`, `statut`, `instrument_requis`) VALUES
+(1, 'PIA-101', 'Piano Débutant', 'Individuel', 1, 1, 1, 2, '10:00:00', '11:00:00', 'Automne 2026', NULL, 'Actif', 'Piano'),
+(2, 'VIO-101', 'Violon Intermédiaire', 'Individuel', 1, 2, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', NULL, 'Actif', 'Violon'),
+(3, 'ORC-101', 'Orchestre Symphonique', 'Ensemble', 50, 1, 6, 1, '15:00:00', '18:00:00', 'Automne 2026', NULL, 'Actif', NULL),
+(4, 'SOL-101', 'Solfège Débutant', 'Collectif', 25, 3, 3, 4, '09:00:00', '10:00:00', 'Automne 2026', NULL, 'Actif', NULL),
+(5, 'HAR-101', 'Harmonie Avancée', 'Collectif', 20, 3, 3, 5, '14:00:00', '15:30:00', 'Automne 2026', NULL, 'Actif', NULL),
+(6, 'CHAMB-101', 'Musique de Chambre', 'Ensemble', 8, 1, 2, 2, '18:00:00', '19:30:00', 'Automne 2026', NULL, 'Actif', NULL),
+(7, 'FLU-101', 'Cours de Flûte Traversière', 'Individuel', 2, 1, 1, 3, '14:00:00', '15:00:00', 'Automne 2026', 'Cours d\'initiation à la flûte traversière pour débutants.', 'Actif', 'Flûte Traversière'),
+(9, 'HRM-202', 'Haute Contre et Chant Baroque', 'Masterclass', 20, 2, 2, 4, '10:30:00', '12:00:00', '1', '', 'Révoqué', NULL);
 
 -- --------------------------------------------------------
 
@@ -82,17 +83,20 @@ CREATE TABLE `enseignants` (
   `id` int NOT NULL,
   `utilisateur_id` int NOT NULL,
   `statut_titre` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bureau` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `bureau` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `telephone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `biographie` text COLLATE utf8mb4_unicode_ci,
+  `specialite` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `enseignants`
 --
 
-INSERT INTO `enseignants` (`id`, `utilisateur_id`, `statut_titre`, `bureau`) VALUES
-(1, 2, 'Professeur', 'Bureau 101'),
-(2, 7, 'Maître de Conférence', 'Bureau 204'),
-(3, 8, 'Professeur Émérite', 'Bureau 102');
+INSERT INTO `enseignants` (`id`, `utilisateur_id`, `statut_titre`, `bureau`, `telephone`, `biographie`, `specialite`) VALUES
+(1, 2, 'Professeur', 'Bureau 101', NULL, NULL, NULL),
+(2, 7, 'Maître de Conférence', 'Bureau 204', NULL, NULL, NULL),
+(3, 8, 'Professeur Émérite', 'Bureau 102', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -107,18 +111,21 @@ CREATE TABLE `etudiants` (
   `cycle` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `instrument_principal_id` int DEFAULT NULL,
   `filiere` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `objectif_pratique_hebdomadaire` int DEFAULT '600'
+  `objectif_pratique_hebdomadaire` int DEFAULT '600',
+  `telephone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `biographie` text COLLATE utf8mb4_unicode_ci,
+  `instrument_majeur` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `etudiants`
 --
 
-INSERT INTO `etudiants` (`id`, `utilisateur_id`, `numero_etudiant`, `cycle`, `instrument_principal_id`, `filiere`, `objectif_pratique_hebdomadaire`) VALUES
-(1, 3, 'STU-2024-001', 'Licence', 1, 'Classique', 600),
-(2, 4, 'STU-2024-002', 'Licence', 2, 'Classique', 600),
-(3, 5, 'STU-2024-003', 'Master', 1, 'Jazz', 600),
-(4, 6, 'STU-2024-TEST', 'Licence', 1, 'Classique', 600);
+INSERT INTO `etudiants` (`id`, `utilisateur_id`, `numero_etudiant`, `cycle`, `instrument_principal_id`, `filiere`, `objectif_pratique_hebdomadaire`, `telephone`, `biographie`, `instrument_majeur`) VALUES
+(1, 3, 'STU-2024-001', 'Licence', 1, 'Classique', 600, NULL, '', 'Violon'),
+(2, 4, 'STU-2024-002', 'Licence', 2, 'Classique', 600, NULL, NULL, 'Piano'),
+(3, 5, 'STU-2024-003', 'Master', 1, 'Jazz', 600, NULL, NULL, 'Flûte Traversière'),
+(4, 6, 'STU-2024-TEST', 'Licence', 1, 'Classique', 600, NULL, NULL, 'Piano');
 
 -- --------------------------------------------------------
 
@@ -159,15 +166,17 @@ CREATE TABLE `inscriptions` (
 --
 
 INSERT INTO `inscriptions` (`id`, `etudiant_id`, `cours_id`, `statut_inscription`, `date_inscription`) VALUES
-(8, 1, 1, 'Validée', '2026-05-30 10:26:07'),
-(10, 1, 3, 'Validée', '2026-05-30 10:26:07'),
-(11, 2, 2, 'Validée', '2026-05-30 10:26:07'),
-(12, 2, 4, 'En attente', '2026-05-30 10:26:07'),
-(13, 3, 1, 'En attente', '2026-05-30 10:26:07'),
-(14, 3, 5, 'Validée', '2026-05-30 10:26:07'),
-(15, 4, 7, 'En attente', '2026-05-30 10:26:07'),
-(19, 1, 5, 'Validée', '2026-05-30 13:12:30'),
-(22, 1, 9, 'Validée', '2026-05-30 18:33:11');
+(24, 1, 2, 'En attente', '2026-05-31 02:01:12'),
+(25, 1, 3, 'Validée', '2026-05-31 02:01:17'),
+(26, 1, 6, 'Validée', '2026-05-31 02:01:26'),
+(27, 2, 1, 'En attente', '2026-05-31 02:01:51'),
+(28, 2, 4, 'Validée', '2026-05-31 02:01:53'),
+(29, 2, 6, 'Validée', '2026-05-31 02:02:00'),
+(30, 3, 7, 'En attente', '2026-05-31 02:02:23'),
+(31, 3, 5, 'Validée', '2026-05-31 02:02:25'),
+(32, 3, 3, 'Validée', '2026-05-31 02:02:47'),
+(33, 4, 5, 'En attente', '2026-05-31 02:03:15'),
+(34, 4, 1, 'Validée', '2026-05-31 02:03:17');
 
 -- --------------------------------------------------------
 
@@ -260,7 +269,21 @@ CREATE TABLE `notifications` (
 
 INSERT INTO `notifications` (`id`, `utilisateur_id`, `message`, `lu`, `date_creation`) VALUES
 (11, 7, '🎵 Cher Maître, l\'administration a clôturé votre chaire d\'enseignement pour le cours \'Haute Contre et Chant Baroque\'.', 1, '2026-05-30 23:25:05'),
-(12, 3, '⚠️ Le cours auquel vous étiez inscrit (\'Haute Contre et Chant Baroque\') a été révoqué par l\'administration.', 1, '2026-05-30 23:25:05');
+(12, 3, '⚠️ Le cours auquel vous étiez inscrit (\'Haute Contre et Chant Baroque\') a été révoqué par l\'administration.', 1, '2026-05-30 23:25:05'),
+(13, 3, '🎵 Une nouvelle note a été attribuée à votre partition de \'Haute Contre et Chant Baroque\'. Consultez votre livret !', 1, '2026-05-30 23:27:42'),
+(14, 4, '🎵 Une nouvelle note a été attribuée à votre partition de \'Violon Intermédiaire\'. Consultez votre livret !', 1, '2026-05-30 23:27:42'),
+(15, 2, '🎻 Nouvelle demande : Thomas Bernard souhaite s\'inscrire à votre cours de \'Musique de Chambre\'.', 1, '2026-05-31 00:29:49'),
+(16, 7, '🎻 Nouvelle demande : Sophie Martin souhaite s\'inscrire à votre cours de \'Violon Intermédiaire\'.', 0, '2026-05-31 02:01:12'),
+(17, 2, '🎻 Nouvelle demande : Sophie Martin souhaite s\'inscrire à votre cours de \'Orchestre Symphonique\'.', 0, '2026-05-31 02:01:17'),
+(18, 2, '🎻 Nouvelle demande : Sophie Martin souhaite s\'inscrire à votre cours de \'Musique de Chambre\'.', 0, '2026-05-31 02:01:26'),
+(19, 2, '🎻 Nouvelle demande : Thomas Bernard souhaite s\'inscrire à votre cours de \'Piano Débutant\'.', 0, '2026-05-31 02:01:51'),
+(20, 8, '🎻 Nouvelle demande : Thomas Bernard souhaite s\'inscrire à votre cours de \'Solfège Débutant\'.', 1, '2026-05-31 02:01:53'),
+(21, 2, '🎻 Nouvelle demande : Thomas Bernard souhaite s\'inscrire à votre cours de \'Musique de Chambre\'.', 0, '2026-05-31 02:02:00'),
+(22, 2, '🎻 Nouvelle demande : Emma Rousseau souhaite s\'inscrire à votre cours de \'Cours de Flûte Traversière\'.', 0, '2026-05-31 02:02:23'),
+(23, 8, '🎻 Nouvelle demande : Emma Rousseau souhaite s\'inscrire à votre cours de \'Harmonie Avancée\'.', 1, '2026-05-31 02:02:25'),
+(24, 2, '🎻 Nouvelle demande : Emma Rousseau souhaite s\'inscrire à votre cours de \'Orchestre Symphonique\'.', 0, '2026-05-31 02:02:47'),
+(25, 8, '🎻 Nouvelle demande : Test User souhaite s\'inscrire à votre cours de \'Harmonie Avancée\'.', 1, '2026-05-31 02:03:15'),
+(26, 2, '🎻 Nouvelle demande : Test User souhaite s\'inscrire à votre cours de \'Piano Débutant\'.', 0, '2026-05-31 02:03:17');
 
 -- --------------------------------------------------------
 
@@ -481,7 +504,7 @@ ALTER TABLE `evenements_concerts`
 -- AUTO_INCREMENT pour la table `inscriptions`
 --
 ALTER TABLE `inscriptions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT pour la table `instruments`
@@ -499,13 +522,13 @@ ALTER TABLE `journal_pratique`
 -- AUTO_INCREMENT pour la table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT pour la table `reservations_salles`

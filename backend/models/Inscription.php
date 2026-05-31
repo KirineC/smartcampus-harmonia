@@ -95,9 +95,10 @@ class Inscription {
 
     // Tenter de créer une demande d'inscription
     public function inscrire($etudiant_id, $cours_id) {
-        // 1. Vérifier si le cours existe et récupérer sa capacité
+        // 1. Vérifier si le cours existe et récupérer sa capacité ET l'instrument requis
+        // 🎯 AJOUT DE 'instrument_requis' DANS LA REQUÊTE
         $stmtCours = $this->pdo->prepare("
-            SELECT id, capacite_max 
+            SELECT id, capacite_max, titre, instrument_requis 
             FROM cours 
             WHERE id = ?
         ");
@@ -109,6 +110,24 @@ class Inscription {
                 'success' => false,
                 'error' => 'Cours inexistant.'
             ];
+        }
+
+        // ============================================================
+        // 🎻 NOUVELLE RÈGLE MÉTIER : VÉRIFICATION DE L'INSTRUMENT
+        // ============================================================
+        if (!empty($cours['instrument_requis'])) {
+            // Récupérer l'instrument majeur de l'étudiant connecté
+            $stmtEleve = $this->pdo->prepare("SELECT instrument_majeur FROM etudiants WHERE id = ?");
+            $stmtEleve->execute([$etudiant_id]);
+            $eleveInstrument = $stmtEleve->fetchColumn();
+
+            // Si l'étudiant n'a pas le bon instrument majeur, on bloque net
+            if (strcasecmp(trim($eleveInstrument), trim($cours['instrument_requis'])) !== 0) {
+                return [
+                    'success' => false,
+                    'error' => "🎻 Accès refusé : Le cours « " . $cours['titre'] . " » est réservé aux pupitres de type [" . $cours['instrument_requis'] . "]. Votre instrument majeur enregistré est [" . ($eleveInstrument ?: 'Aucun') . "]."
+                ];
+            }
         }
 
         // 2. Vérifier si l'étudiant a déjà une demande ou une inscription pour ce même cours

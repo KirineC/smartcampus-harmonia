@@ -29,37 +29,12 @@ class Cours {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function create($code, $titre, $type_cours, $capacite_max, $enseignant_id, $salle_id, $jour, $debut, $fin, $semestre, $desc) {
+    public function create($code, $titre, $type, $capa, $prof, $salle, $jour, $debut, $fin, $semestre, $desc, $instrument_requis = null) {
         $stmt = $this->pdo->prepare("
-            INSERT INTO cours (
-                code_cours, 
-                titre, 
-                type_cours, 
-                capacite_max, 
-                enseignant_id, 
-                salle_id, 
-                jour_semaine, 
-                heure_debut, 
-                heure_fin, 
-                semestre, 
-                description
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO cours (code_cours, titre, type_cours, capacite_max, enseignant_id, salle_id, jour_semaine, heure_debut, heure_fin, semestre, description, instrument_requis, statut)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Actif')
         ");
-        
-        return $stmt->execute([
-            $code, 
-            $titre, 
-            $type_cours, 
-            $capacite_max, 
-            $enseignant_id, 
-            $salle_id, 
-            $jour, 
-            $debut, 
-            $fin, 
-            $semestre, 
-            $desc
-        ]);
+    return $stmt->execute([$code, $titre, $type, $capa, $prof, $salle, $jour, $debut, $fin, $semestre, $desc, $instrument_requis]);
     }
 }
 ?>

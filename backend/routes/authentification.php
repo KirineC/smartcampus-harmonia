@@ -14,13 +14,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $filiere = null;
             
             if ($user['role'] === 'etudiant') {
-                $stmt = $pdo->prepare("SELECT id, filiere FROM etudiants WHERE utilisateur_id = :uid");
+                // 🎯 AJOUT DE 'instrument_majeur' DANS LE SELECT
+                $stmt = $pdo->prepare("SELECT id, filiere, instrument_majeur FROM etudiants WHERE utilisateur_id = :uid");
                 $stmt->execute(['uid' => $user['id']]);
                 $etudiantData = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if ($etudiantData) {
                     $etudiant_id = $etudiantData['id'];
                     $filiere = $etudiantData['filiere'];
+                    $instrument_majeur = $etudiantData['instrument_majeur']; // 🎻 Le voilà !
                 }
             }
             
@@ -29,8 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'success' => true,
                 'user' => [
                     'id' => $user['id'],
-                    'etudiant_id' => $etudiant_id, // 🪙 Maintenant dispo ! (ex: 1 pour Sophie)
-                    'filiere' => $filiere,         // ✨ Pratique pour ton Dashboard (ex: Classique)
+                    'etudiant_id' => $etudiant_id,
+                    'filiere' => $filiere,
+                    'instrument_majeur' => $instrument_majeur ?? null, // 🎯 TRANSMISE À REACT ICI !
                     'email' => $user['courriel'],
                     'role' => $user['role'],
                     'prenom' => $user['prenom'],

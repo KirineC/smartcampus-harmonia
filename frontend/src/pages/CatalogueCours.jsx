@@ -10,6 +10,11 @@ export default function CatalogueCours() {
   const [message, setMessage] = useState('');
   const [inscriptionLoading, setInscriptionLoading] = useState(null);
 
+  // 🎯 1. Récupération de l'instrument majeur de l'élève connecté
+  const userData = localStorage.getItem('user');
+  const user = userData ? JSON.parse(userData) : null;
+  const etudiantInstrument = user?.instrument_majeur || '';
+
   const fetchCours = async () => {
     try {
       const response = await api.get('/index.php');
@@ -25,7 +30,6 @@ export default function CatalogueCours() {
   const fetchMesInscriptions = async () => {
     try {
       const response = await api.get('/index.php?mes_inscriptions=1');
-
       if (Array.isArray(response.data)) {
         setMesInscriptions(response.data);
       }
@@ -57,7 +61,6 @@ export default function CatalogueCours() {
       }
     } catch (err) {
       console.error("Erreur inscription:", err);
-
       if (err.response?.status === 401) {
         setMessage("⚠️ Vous devez être connecté pour vous inscrire.");
       } else {
@@ -87,7 +90,6 @@ export default function CatalogueCours() {
       }
     } catch (err) {
       console.error("Erreur annulation:", err);
-
       if (err.response?.status === 401) {
         setMessage("⚠️ Vous devez être connecté.");
       } else {
@@ -106,7 +108,6 @@ export default function CatalogueCours() {
 
   const getStatutStyle = (statut) => {
     if (!statut) return null;
-
     const statutLower = statut.toLowerCase();
 
     if (statutLower.includes('attente')) {
@@ -201,6 +202,12 @@ export default function CatalogueCours() {
           const estValidee = inscription?.statut_inscription?.toLowerCase().includes('valid');
           const estRefusee = inscription?.statut_inscription?.toLowerCase().includes('refus');
 
+          // 🎯 2. Détection du mauvais instrument
+          const isWrongInstrument = 
+            c.instrument_requis && 
+            etudiantInstrument && 
+            c.instrument_requis.toLowerCase() !== etudiantInstrument.toLowerCase();
+
           return (
             <div
               key={c.id}
@@ -242,6 +249,13 @@ export default function CatalogueCours() {
                   🎵 Maître de classe : <strong>Pr. {c.prenom} {c.prof_nom}</strong>
                 </div>
 
+                {/* 🎯 3. Affichage du badge d'instrument requis sur la carte */}
+                <div className="course-info">
+                  🎻 Pupitre requis : <strong style={{ color: c.instrument_requis ? '#a39264' : '#555' }}>
+                    {c.instrument_requis || "Tous publics"}
+                  </strong>
+                </div>
+
                 <div className="course-info">
                   🏛️ Lieu : <strong>{c.nom_salle}</strong>
                 </div>
@@ -278,6 +292,7 @@ export default function CatalogueCours() {
                   </button>
                 )}
 
+                {/* ✅ Version corrigée : */}
                 {estValidee && (
                   <button
                     className="register-button"
@@ -306,21 +321,25 @@ export default function CatalogueCours() {
                   </button>
                 )}
 
+                {/* 🎯 4. Bouton de sollicitation dynamique & grisé selon l'instrument */}
                 {!inscription && (
                   <button
-                    className="register-button"
-                    onClick={() => handleInscription(c.id)}
-                    disabled={coursComplet || inscriptionLoading === c.id}
+                    className={`register-button ${isWrongInstrument ? 'disabled-rock' : ''}`}
+                    onClick={() => !isWrongInstrument && handleInscription(c.id)}
+                    disabled={coursComplet || isWrongInstrument || inscriptionLoading === c.id}
+                    title={isWrongInstrument ? `Ce cours est exclusivement réservé au pupitre [${c.instrument_requis}]` : ''}
                     style={{
-                      opacity: coursComplet ? 0.5 : 1,
-                      cursor: coursComplet ? 'not-allowed' : 'pointer'
+                      opacity: (coursComplet || isWrongInstrument) ? 0.4 : 1,
+                      cursor: (coursComplet || isWrongInstrument) ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    {coursComplet
-                      ? 'Cours complet'
-                      : inscriptionLoading === c.id
-                        ? 'Envoi de la demande...'
-                        : 'Solliciter une inscription'}
+                    {isWrongInstrument 
+                      ? `Réservé aux ${c.instrument_requis}s`
+                      : coursComplet
+                        ? 'Cours complet'
+                        : inscriptionLoading === c.id
+                          ? 'Envoi de la demande...'
+                          : 'Solliciter une inscription'}
                   </button>
                 )}
               </div>

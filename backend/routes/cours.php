@@ -6,6 +6,11 @@ if ($method === 'GET') {
 }
 elseif ($method === 'POST') {
     $coursModel = new Cours($pdo);
+    
+    // 🎯 On récupère le nouvel instrument requis envoyé par le formulaire Admin
+    // (S'il n'est pas fourni, on met NULL par défaut)
+    $instrument_requis = $data['instrument_requis'] ?? null;
+
     $success = $coursModel->create(
         $data['code_cours'],
         $data['titre'],
@@ -17,7 +22,8 @@ elseif ($method === 'POST') {
         $data['heure_debut'],
         $data['heure_fin'],
         $data['semestre'],
-        $data['description']
+        $data['description'],
+        $instrument_requis // 🎯 On le passe en 12ème paramètre à la méthode create
     );
     
     echo json_encode(['success' => $success]);

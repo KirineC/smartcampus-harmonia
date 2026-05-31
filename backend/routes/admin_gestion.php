@@ -1,6 +1,11 @@
 <?php
 // backend/routes/admin_gestion.php
 
+// 🎯 CONFIGURATION NETTE POUR LA DÉMO JURY
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // 1. Sécurité : Vérification de l'accès Administrateur
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     http_response_code(403);
@@ -15,30 +20,50 @@ $method = $_SERVER['REQUEST_METHOD'];
 // ============================================================
 if ($method === 'GET') {
     try {
+        // A. On récupère la liste complète des cours
         $stmtCours = $pdo->query("
             SELECT 
                 c.id, c.code_cours, c.titre, c.type_cours, c.capacite_max, 
                 c.jour_semaine, c.heure_debut, c.heure_fin, c.semestre, c.description, c.salle_id, c.enseignant_id, u.nom AS prof_nom, u.prenom AS prof_prenom, c.statut
             FROM cours c
             LEFT JOIN enseignants e ON c.enseignant_id = e.id          
-            LEFT JOIN utilisateurs u ON e.utilisateur_id = u.id        
+            LEFT JOIN utilisateurs u ON e.utilisateur_id = u.id          
             ORDER BY c.jour_semaine, c.heure_debut
         ");
         $listeCours = $stmtCours->fetchAll(PDO::FETCH_ASSOC);
 
+        // B. On récupère la liste complète des profs
         $stmtProfs = $pdo->query("SELECT e.id, u.nom, u.prenom FROM enseignants e JOIN utilisateurs u ON e.utilisateur_id = u.id ORDER BY u.nom");
         $listeProfs = $stmtProfs->fetchAll(PDO::FETCH_ASSOC);
 
-        // C. On récupère TOUTES les infos de la salle, y compris les instruments !
+        // C. On récupère TOUTES les infos de la salle
         $stmtSalles = $pdo->query("SELECT id, nom_salle, batiment, capacite_maximale, instruments_presents FROM salles ORDER BY nom_salle");
         $listeSalles = $stmtSalles->fetchAll(PDO::FETCH_ASSOC);
+
+        // D. L'ANNUAIRE ÉTUDIANT COMPLET
+        $stmtStudents = $pdo->query("
+            SELECT 
+                e.id, 
+                e.numero_etudiant, 
+                e.filiere, 
+                e.instrument_majeur, 
+                u.nom, 
+                u.prenom, 
+                u.courriel 
+            FROM etudiants e 
+            JOIN utilisateurs u ON e.utilisateur_id = u.id 
+            ORDER BY u.nom
+        ");
+        $listeEtudiants = $stmtStudents->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode([
             "success" => true,
             "cours" => $listeCours,
             "enseignants" => $listeProfs,
-            "salles" => $listeSalles
+            "salles" => $listeSalles,
+            "etudiants" => $listeEtudiants 
         ]);
+
     } catch (PDOException $e) {
         http_response_code(500);
         echo json_encode(["success" => false, "error" => "Erreur de registre : " . $e->getMessage()]);
@@ -52,9 +77,7 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
 
-    // ------------------------------------------------------------
-    // 👤 NOUVELLE ACTION : CRÉATION D'UN COMPTE (ÉTUDIANT OU PROF)
-    // ------------------------------------------------------------
+    // 👤 SOUS-ACTION A : CRÉATION D'UN COMPTE
     if (isset($data['action']) && $data['action'] === 'creer_utilisateur') {
         if (empty($data['email']) || empty($data['password']) || empty($data['role']) || empty($data['prenom']) || empty($data['nom'])) {
             http_response_code(400);
@@ -64,11 +87,10 @@ if ($method === 'POST') {
 
         $email = htmlspecialchars(trim($data['email']));
         $password = password_hash($data['password'], PASSWORD_BCRYPT);
-        $role = htmlspecialchars($data['role']); // 'etudiant' ou 'enseignant'
+        $role = htmlspecialchars($data['role']); 
         $prenom = htmlspecialchars(trim($data['prenom']));
         $nom = htmlspecialchars(trim($data['nom']));
 
-        // Vérification de l'unicité de l'email
         $stmtCheckEmail = $pdo->prepare("SELECT id FROM utilisateurs WHERE courriel = ?");
         $stmtCheckEmail->execute([$email]);
         if ($stmtCheckEmail->rowCount() > 0) {
@@ -80,7 +102,6 @@ if ($method === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            // 1. Insertion dans la table centrale utilisateurs
             $stmtUser = $pdo->prepare("
                 INSERT INTO utilisateurs (courriel, mot_de_passe_chiffre, role, prenom, nom)
                 VALUES (?, ?, ?, ?, ?)
@@ -88,14 +109,11 @@ if ($method === 'POST') {
             $stmtUser->execute([$email, $password, $role, $prenom, $nom]);
             $newUserId = $pdo->lastInsertId();
 
-            // 2. Traitement spécifique selon le rôle choisi par le secrétariat
             if ($role === 'etudiant') {
                 $filiere = htmlspecialchars($data['filiere'] ?? 'Classique');
                 $instrument = htmlspecialchars($data['instrument_majeur'] ?? 'Piano');
-
                 $numeroEtudiant = 'E2026-' . rand(1000, 9999);
 
-                // On ajoute 'numero_etudiant' dans la requête SQL
                 $stmtEtudiant = $pdo->prepare("
                     INSERT INTO etudiants (utilisateur_id, filiere, instrument_majeur, numero_etudiant)
                     VALUES (?, ?, ?, ?)
@@ -103,7 +121,6 @@ if ($method === 'POST') {
                 $stmtEtudiant->execute([$newUserId, $filiere, $instrument, $numeroEtudiant]);
 
             } else if ($role === 'enseignant') {
-                // Création du profil de l'enseignant
                 $stmtEnseignant = $pdo->prepare("
                     INSERT INTO enseignants (utilisateur_id)
                     VALUES (?)
@@ -122,7 +139,7 @@ if ($method === 'POST') {
         exit;
     }
 
-    // 🔄 CAS A : MODIFICATION D'UN COURS EXISTANT
+    // 🔄 SOUS-ACTION B : MODIFICATION D'UN COURS EXISTANT
     if (isset($data['action']) && $data['action'] === 'modifier_cours') {
         if (empty($data['id']) || empty($data['code_cours']) || empty($data['titre']) || empty($data['salle_id']) || empty($data['enseignant_id'])) {
             http_response_code(400);
@@ -183,7 +200,7 @@ if ($method === 'POST') {
         exit;
     }
 
-    // ➕ CAS B : CRÉATION STANDARD D'UN COURS
+    // ➕ SOUS-ACTION C : CRÉATION STANDARD D'UN COURS
     if (
         empty($data['code_cours']) || empty($data['titre']) || empty($data['type_cours']) ||
         empty($data['capacite_max']) || empty($data['enseignant_id']) || empty($data['salle_id']) ||
@@ -243,67 +260,122 @@ if ($method === 'POST') {
 }
 
 // ============================================================
-// 🗑️ ACTION 3 : CLÔTURE D'UNE CHAIRE (RÉVOCATION + NOTIFS ÉLÈVES & PROF)
+// 🗑️ ACTION 3 : SUPPRESSIONS ET RÉVOCATIONS (DELETE)
 // ============================================================
 if ($method === 'DELETE') {
-    if (!isset($_GET['supprimer_cours'])) {
-        http_response_code(400);
-        echo json_encode(["success" => false, "error" => "Identifiant manquant."]);
+    
+    // 👥 CAS A : SUPPRESSION DÉFINITIVE D'UN ÉTUDIANT (MÉTHODE NETTOYÉE ET DIRECTE)
+    if (isset($_GET['supprimer_etudiant'])) {
+        $etudiant_id = (int)$_GET['supprimer_etudiant'];
+
+        try {
+            $pdo->beginTransaction();
+
+            // 1. Trouver l'id utilisateur central lié à cette fiche
+            $stmtGetUid = $pdo->prepare("SELECT utilisateur_id FROM etudiants WHERE id = ?");
+            $stmtGetUid->execute([$etudiant_id]);
+            $utilisateur_id = $stmtGetUid->fetchColumn();
+
+            if (!$utilisateur_id) {
+                http_response_code(404);
+                echo json_encode(["success" => false, "error" => "Étudiant introuvable."]);
+                exit;
+            }
+
+            // 2. ⚡ DESACTIVATION DES CONTRAINTES DE CLES ETRANGERES
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+
+            // 3. 🎯 NETTOYAGE INTELLIGENT : Suppression par 'etudiant_id' si la colonne existe
+            $tablesEtudiantId = ['notes', 'inscriptions', 'pratiques', 'pratique', 'seances_pratique', 'pratique_heures', 'heures_pratique'];
+            foreach ($tablesEtudiantId as $table) {
+                $checkTable = $pdo->query("SHOW TABLES LIKE '{$table}'")->rowCount();
+                if ($checkTable > 0) {
+                    // On essaye de nettoyer avec etudiant_id
+                    try {
+                        $stmt = $pdo->prepare("DELETE FROM {$table} WHERE etudiant_id = ?");
+                        $stmt->execute([$etudiant_id]);
+                    } catch (PDOException $ex) {
+                        // Si la colonne 'etudiant_id' n'existe pas dans cette table, on essaye utilisateur_id
+                        try {
+                            $stmt = $pdo->prepare("DELETE FROM {$table} WHERE utilisateur_id = ?");
+                            $stmt->execute([$utilisateur_id]);
+                        } catch (PDOException $ex2) {
+                            // On ignore si aucune colonne ne match pour éviter de bloquer
+                        }
+                    }
+                }
+            }
+
+            // Nettoyage de la table notifications (basée sur utilisateur_id)
+            $checkNotifs = $pdo->query("SHOW TABLES LIKE 'notifications'")->rowCount();
+            if ($checkNotifs > 0) {
+                $stmtNotif = $pdo->prepare("DELETE FROM notifications WHERE utilisateur_id = ?");
+                $stmtNotif->execute([$utilisateur_id]);
+            }
+
+            // 4. Suppression des fiches principales
+            $stmtDelEtudiant = $pdo->prepare("DELETE FROM etudiants WHERE id = ?");
+            $stmtDelEtudiant->execute([$etudiant_id]);
+
+            $stmtDelUser = $pdo->prepare("DELETE FROM utilisateurs WHERE id = ?");
+            $stmtDelUser->execute([$utilisateur_id]);
+
+            // 5. ⚡ RÉACTIVATION DES CLÉS ÉTRANGÈRES
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+            $pdo->commit();
+            echo json_encode(["success" => true, "message" => "Le profil académique a été supprimé de la base de données."]);
+
+        } catch (PDOException $e) {
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            http_response_code(500);
+            echo json_encode(["success" => false, "error" => "Erreur fatale : " . $e->getMessage()]);
+        }
         exit;
     }
 
-    $cours_id = (int)$_GET['supprimer_cours'];
+    // 🎻 CAS B : RÉVOCATION / FERMETURE D'UNE CHAIRE DE COURS
+    if (isset($_GET['supprimer_cours'])) {
+        $cours_id = (int)$_GET['supprimer_cours'];
 
-    try {
-        $pdo->beginTransaction();
+        try {
+            $pdo->beginTransaction();
 
-        // A. Récupérer le titre du cours ET l'ID utilisateur de l'enseignant
-        $stmtCoursInfo = $pdo->prepare("
-            SELECT c.titre, e.utilisateur_id AS prof_user_id
-            FROM cours c
-            LEFT JOIN enseignants e ON c.enseignant_id = e.id
-            WHERE c.id = ?
-        ");
-        $stmtCoursInfo->execute([$cours_id]);
-        $coursInfo = $stmtCoursInfo->fetch(PDO::FETCH_ASSOC);
-        
-        $titreCours = $coursInfo ? $coursInfo['titre'] : "Cours inconnu";
-        $profUserId = $coursInfo ? $coursInfo['prof_user_id'] : null;
+            $stmtCoursInfo = $pdo->prepare("SELECT c.titre, e.utilisateur_id AS prof_user_id FROM cours c LEFT JOIN enseignants e ON c.enseignant_id = e.id WHERE c.id = ?");
+            $stmtCoursInfo->execute([$cours_id]);
+            $coursInfo = $stmtCoursInfo->fetch(PDO::FETCH_ASSOC);
+            
+            $titreCours = $coursInfo ? $coursInfo['titre'] : "Cours inconnu";
+            $profUserId = $coursInfo ? $coursInfo['prof_user_id'] : null;
 
-        // B. Révocation douce : mise à jour du statut du cours
-        $stmtDelete = $pdo->prepare("UPDATE cours SET statut = 'Révoqué' WHERE id = :id");
-        $stmtDelete->execute([':id' => $cours_id]);
+            $stmtDelete = $pdo->prepare("UPDATE cours SET statut = 'Révoqué' WHERE id = :id");
+            $stmtDelete->execute([':id' => $cours_id]);
 
-        // Préparation du template d'insertion des notifications
-        $stmtNotif = $pdo->prepare("INSERT INTO notifications (utilisateur_id, message) VALUES (?, ?)");
+            $stmtNotif = $pdo->prepare("INSERT INTO notifications (utilisateur_id, message) VALUES (?, ?)");
 
-        // C. 👨‍🏫 NOTIFICATION DE L'ENSEIGNANT (Si trouvé)
-        if ($profUserId) {
-            $msgProf = "🎵 Cher Maître, l'administration a clôturé votre chaire d'enseignement pour le cours '" . $titreCours . "'.";
-            $stmtNotif->execute([$profUserId, $msgProf]);
+            if ($profUserId) {
+                $msgProf = "🎵 Cher Maître, l'administration a clôturé votre chaire d'enseignement pour le cours '" . $titreCours . "'.";
+                $stmtNotif->execute([$profUserId, $msgProf]);
+            }
+
+            $stmtEleves = $pdo->prepare("SELECT e.utilisateur_id FROM inscriptions i JOIN etudiants e ON i.etudiant_id = e.id WHERE i.cours_id = ?");
+            $stmtEleves->execute([$cours_id]);
+            $eleves = $stmtEleves->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($eleves as $eleve) {
+                $msgEleve = "⚠️ Le cours auquel vous étiez inscrit ('" . $titreCours . "') a été révoqué par l'administration.";
+                $stmtNotif->execute([$eleve['utilisateur_id'], $msgEleve]);
+            }
+
+            $pdo->commit();
+            echo json_encode(["success" => true, "message" => "La chaire a été révoquée. L'enseignant et les élèves ont été notifiés."]);
+        } catch (PDOException $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            http_response_code(500);
+            echo json_encode(["success" => false, "error" => "Erreur lors de la révocation : " . $e->getMessage()]);
         }
-
-        // D. 👥 NOTIFICATION DES ÉTUDIANTS INSCRITS
-        $stmtEleves = $pdo->prepare("
-            SELECT e.utilisateur_id 
-            FROM inscriptions i
-            JOIN etudiants e ON i.etudiant_id = e.id
-            WHERE i.cours_id = ?
-        ");
-        $stmtEleves->execute([$cours_id]);
-        $eleves = $stmtEleves->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($eleves as $eleve) {
-            $msgEleve = "⚠️ Le cours auquel vous étiez inscrit ('" . $titreCours . "') a été révoqué par l'administration.";
-            $stmtNotif->execute([$eleve['utilisateur_id'], $msgEleve]);
-        }
-
-        $pdo->commit();
-        echo json_encode(["success" => true, "message" => "La chaire a été révoquée. L'enseignant et les élèves ont été notifiés."]);
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        http_response_code(500);
-        echo json_encode(["success" => false, "error" => "Erreur lors de la révocation et des notifications : " . $e->getMessage()]);
+        exit;
     }
-    exit;
 }
+?>

@@ -215,6 +215,15 @@ elseif (
     include __DIR__ . '/routes/admin_gestion.php';
 }
 
+// Actions Admin (Radier un étudiant)
+elseif (
+    $isIndex 
+    && $method === 'DELETE' 
+    && isset($_GET['supprimer_etudiant'])
+) {
+    include __DIR__ . '/routes/admin_gestion.php';
+}
+
 // --- PROFIL : Récupérer ou modifier les données du profil ---
 elseif (
     $isIndex 

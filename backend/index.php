@@ -57,6 +57,7 @@ $isCours = preg_match('/\/api\/cours/', $request);
 $isEnseignantEleves = preg_match('/\/api\/enseignant_eleves/', $request);
 $isEnseignantActions = preg_match('/\/api\/enseignant/', $request);
 $isNotifications = preg_match('/\/api\/notifications/', $request);
+$isProfil = preg_match('/\/api\/profil/', $request);
 
 // ============================================================
 // 7. ROUTEUR (Classé par méthode HTTP et niveau de précision)
@@ -190,6 +191,15 @@ elseif (
     && isset($_GET['supprimer_cours'])
 ) {
     include __DIR__ . '/routes/admin_gestion.php';
+}
+
+// --- PROFIL : Récupérer ou modifier les données du profil ---
+elseif (
+    $isIndex 
+    && ($method === 'GET' || $method === 'POST')
+    && isset($_GET['profil'])
+) {
+    include __DIR__ . '/routes/profil.php';
 }
 
 // ------------------------------------------------------------

@@ -10,6 +10,7 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherInscriptions from './pages/TeacherInscriptions';
 import TeacherNotes from './pages/TeacherNotes';
 import AdminSecretariat from './pages/AdminSecretariat';
+import Profil from './pages/Profil'; // 🏛️ Ajout de l'import du composant de profil
 
 export default function App() {
   return (
@@ -21,6 +22,9 @@ export default function App() {
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/mes-notes" element={<MesNotes />} />
+          
+          {/* 👤 Nouvelle route pour la fiche d'artiste globale */}
+          <Route path="/profil" element={<Profil />} />
 
           <Route path="/enseignant/dashboard" element={<TeacherDashboard />} />
           <Route path="/enseignant/inscriptions" element={<TeacherInscriptions />} />

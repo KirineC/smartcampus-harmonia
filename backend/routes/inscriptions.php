@@ -30,7 +30,7 @@ if ($method === 'GET') {
             c.jour_semaine,
             c.heure_debut,
             c.heure_fin,
-            s.nom_salle, -- 🎯 La virgule magique est rajoutée ici !
+            s.nom_salle, 
             c.statut AS cours_statut
         FROM inscriptions i
         JOIN cours c ON i.cours_id = c.id
@@ -101,6 +101,36 @@ if ($method === 'POST') {
     // BRANCHE B : inscription normale
     // ----------------------------------------
     $resultat = $inscriptionModel->inscrire($etudiant_id, $cours_id);
+
+    // 🔔 ON ENVOIE LA NOTIFICATION SI L'INSCRIPTION S'EST BIEN PASSÉE EN BDD
+    if ($resultat && isset($resultat['success']) && $resultat['success'] === true) {
+        try {
+            // 1. Récupération des données textuelles pour le message
+            $stmtInfos = $pdo->prepare("
+                SELECT c.titre AS nom_cours, e.utilisateur_id AS prof_user_id, u.nom AS eleve_nom, u.prenom AS eleve_prenom
+                FROM cours c
+                LEFT JOIN enseignants e ON c.enseignant_id = e.id
+                CROSS JOIN utilisateurs u 
+                WHERE c.id = ? AND u.id = ?
+            ");
+            $stmtInfos->execute([$cours_id, $_SESSION['user_id']]);
+            $infos = $stmtInfos->fetch(PDO::FETCH_ASSOC);
+
+            if ($infos && !empty($infos['prof_user_id'])) {
+                $nomEleve = $infos['eleve_prenom'] . " " . $infos['eleve_nom'];
+                $msgProf = "🎻 Nouvelle demande : " . $nomEleve . " souhaite s'inscrire à votre cours de '" . $infos['nom_cours'] . "'.";
+
+                // 2. Insertion de la notification pour le professeur concerné
+                $stmtNotifProf = $pdo->prepare("INSERT INTO notifications (utilisateur_id, message, lu) VALUES (?, ?, 0)");
+                $stmtNotifProf->execute([$infos['prof_user_id'], $msgProf]);
+            }
+        } catch (PDOException $e) {
+            // Sécurité : Un échec de notification ne doit pas bloquer la réussite de l'inscription pour l'élève
+            error_log("Erreur lors de l'envoi de la notification enseignant : " . $e->getMessage());
+        }
+    }
+
+    // Réponse finale envoyée à React
     echo json_encode($resultat);
     exit();
 }

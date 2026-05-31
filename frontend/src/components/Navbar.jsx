@@ -9,6 +9,7 @@ export default function Navbar() {
   const location = useLocation();
   const [notifs, setNotifs] = useState([]);
   const [open, setOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false); // 🎯 État pour le menu de l'avatar
   
   // 🎯 Lecture dynamique du localStorage
   const userData = localStorage.getItem('user');
@@ -32,34 +33,42 @@ export default function Navbar() {
     }
   };
 
-  // 🎯 HOOK UNIQUE : S'exécute TOUJOURS, éliminant l'erreur de changement d'ordre
+  // 🎯 HOOK UNIQUE : Élimine les erreurs de changement d'ordre des Hooks
   useEffect(() => {
     if (location.pathname === '/') {
       setNotifs([]);
       setOpen(false);
+      setUserDropdownOpen(false);
       return;
     }
 
     const tokenCheck = localStorage.getItem('user');
     if (tokenCheck && user) {
       chargerNotifications();
-      const interval = setInterval(chargerNotifications, 45000); // 45000 ms = 45 secondes
+      const interval = setInterval(chargerNotifications, 45000); 
       return () => clearInterval(interval); 
     } else {
       setNotifs([]);
     }
   }, [location.pathname, user]); 
 
+  // Fermer les menus si l'utilisateur change de page
+  useEffect(() => {
+    setOpen(false);
+    setUserDropdownOpen(false);
+  }, [location.pathname]);
+
   // 🎯 SÉCURITÉ COMPTAGE
   const nbNonLues = Array.isArray(notifs) 
     ? notifs.filter(n => n && parseInt(n.lu, 10) === 0).length 
     : 0;
 
-  const handleToggleCloche = async () => {
+  const handleToggleCloche = () => {
+    setUserDropdownOpen(false); // Ferme l'autre menu par courtoisie visuelle
     setOpen(!open);
     if (!open && nbNonLues > 0) {
       try {
-        await api.post('/index.php', { action: 'marquer_lu' });
+        api.post('/index.php', { action: 'marquer_lu' });
         if (Array.isArray(notifs)) {
           setNotifs(notifs.map(n => ({ ...n, lu: 1 })));
         }
@@ -69,19 +78,29 @@ export default function Navbar() {
     }
   };
 
+  const handleToggleUserDropdown = () => {
+    setOpen(false); // Ferme la cloche par courtoisie visuelle
+    setUserDropdownOpen(!userDropdownOpen);
+  };
+
   const handleLogout = () => {
     setOpen(false);
+    setUserDropdownOpen(false);
     setNotifs([]); 
     localStorage.removeItem('user');
     navigate('/', { replace: true });
     window.location.reload(); 
   };
-  
-  // 🎯 SÉCURITÉ ABSOLUE POUR LES HOOKS : 
-  // Si on est sur la page de connexion, on affiche un fragment vide plutôt que de faire un return bloquant plus haut.
+
+  // 🎯 SÉCURITÉ ABSOLUE POUR LES HOOKS
   if (location.pathname === '/') {
     return <></>;
   }
+
+  // Extraction des initiales pour l'avatar doré
+  const initiales = user && user.prenom && user.nom 
+    ? `${user.prenom.charAt(0)}${user.nom.charAt(0)}` 
+    : '??';
 
   return (
     <nav className="navbar-container">
@@ -173,7 +192,7 @@ export default function Navbar() {
         {/* 🔔 BLOC CLOCHE DE NOTIFICATION INTÉGRÉ                        */}
         {/* ============================================================ */}
         {user && user?.role !== 'admin' && (
-          <div className="notif-bell-container" style={{ marginRight: '15px', alignSelf: 'center' }}>
+          <div className="notif-bell-container" style={{ marginRight: '5px', alignSelf: 'center' }}>
             <div className="bell-icon-wrapper" onClick={handleToggleCloche} style={{ position: 'relative', fontSize: '20px', cursor: 'pointer' }}>
               <span className="bell-emoji">🔔</span>
               {nbNonLues > 0 && (
@@ -209,9 +228,33 @@ export default function Navbar() {
           </div>
         )}
 
-        <button onClick={handleLogout} className="logout-btn">
-          Quitter la session
-        </button>
+        {/* ============================================================ */}
+        {/* 👤 AVATAR AVEC MENU DÉROULANT INTÉGRÉ                         */}
+        {/* ============================================================ */}
+        {user && (
+          <div className="nav-user-dropdown-container" style={{ position: 'relative', display: 'flex', alignSelf: 'center' }}>
+            <div className="nav-avatar-circle" onClick={handleToggleUserDropdown}>
+              {initiales}
+            </div>
+
+            {userDropdownOpen && (
+              <div className="nav-user-dropdown-menu">
+                <div className="nav-dropdown-user-header">
+                  <p className="user-fullname">{user.prenom} {user.nom}</p>
+                  <p className="user-role-sub">{user.role}</p>
+                </div>
+                <div className="nav-dropdown-divider"></div>
+                <div className="nav-dropdown-item" onClick={() => navigate('/profil')}>
+                  🎻 Fiche d'Artiste
+                </div>
+                <div className="nav-dropdown-item logout" onClick={handleLogout}>
+                  🔏 Quitter la Session
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </nav>
   );

@@ -53,7 +53,7 @@ export default function MonPlanning() {
                 type: item.type_cours || 'Collectif', 
                 debut: item.heure_debut ? item.heure_debut.substring(0, 5) : '00:00',
                 fin: item.heure_fin ? item.heure_fin.substring(0, 5) : '00:00',
-                prof: item.prof_nom || 'Maître Indisponible',
+                prof: item.prof_nom ? `Pr. ${item.prof_prenom} ${item.prof_nom}` : 'Maître Indisponible',
                 max: item.capacite_max,
                 inscrits: item.inscrits_actifs,
                 statut_inscription: item.statut_inscription, 
@@ -238,7 +238,7 @@ export default function MonPlanning() {
             <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>⏰ Horaires : <strong>{coursSelectionne.debut} à {coursSelectionne.fin}</strong></p>
             
             {user?.role === 'etudiant' ? (
-              <p style={{ margin: 0, fontSize: '14px' }}>👨‍🏫 Maître de Conférence : <strong>Pr. {coursSelectionne.prof}</strong></p>
+              <p style={{ margin: 0, fontSize: '14px' }}>👨‍🏫 Maître de Conférence : <strong>{coursSelectionne.prof}</strong></p>
             ) : (
               <>
                 <p style={{ margin: '0 0 15px 0', fontSize: '14px' }}>👥 Inscrits : <strong>{coursSelectionne.inscrits} / {coursSelectionne.max} places</strong></p>

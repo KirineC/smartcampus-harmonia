@@ -23,12 +23,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const objectifMinutes = 600;
 
-  const gateCardStyle = {
-    height: '160px',
-    minHeight: '160px',
-    boxSizing: 'border-box'
-  };
-
   const getLatestNote = (notes = []) => {
     const notesPubliees = notes.filter(
       n => n.valeur_note !== null && n.valeur_note !== undefined
@@ -45,16 +39,13 @@ export default function Dashboard() {
 
   const getLatestSignature = (notes = []) => {
     const latest = getLatestNote(notes);
-
     if (!latest) return null;
-
     return `${latest.inscription_id}-${latest.valeur_note}-${latest.date_evaluation || 'sans-date'}`;
   };
 
   const chargerBulletinEtudiant = async (userObj) => {
     try {
       setBulletinLoading(true);
-
       const response = await api.get('/index.php?mes_notes=1');
 
       if (response.data && response.data.success) {
@@ -99,12 +90,10 @@ export default function Dashboard() {
   const handleOpenBulletin = () => {
     if (user && bulletin?.notes) {
       const signature = getLatestSignature(bulletin.notes);
-
       if (signature) {
         localStorage.setItem(`harmonia_notes_seen_${user.id}`, signature);
       }
     }
-
     setHasNewNote(false);
     navigate('/mes-notes');
   };
@@ -159,6 +148,7 @@ export default function Dashboard() {
       </section>
 
       <div className="dashboard-grid">
+        {/* 🎯 Ajout de la classe explicite 'metronome-box' */}
         <div className="dashboard-card metronome-box">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -181,6 +171,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* 🎯 Ajout de la classe explicite 'daily-program' */}
         <div className="dashboard-card daily-program">
           <h2 className="card-title">📅 Programme du Jour</h2>
           <p className="card-subtitle">Vos séances de répétition pour ce jour</p>
@@ -200,11 +191,8 @@ export default function Dashboard() {
         <h2 className="section-subtitle">Démarches Académiques</h2>
 
         <div className="gates-grid">
-          <div
-            className="gate-card"
-            onClick={() => navigate('/catalogue')}
-            style={gateCardStyle}
-          >
+          {/* 🎯 Étape I : Grand Catalogue avec sa classe dédiée */}
+          <div className="gate-card catalogue" onClick={() => navigate('/catalogue')}>
             <div className="gate-content">
               <span className="gate-number">I</span>
               <h3>Grand Catalogue</h3>
@@ -212,15 +200,11 @@ export default function Dashboard() {
                 Consulter les enseignements disponibles et solliciter une inscription auprès des maîtres de classe.
               </p>
             </div>
-
             <span className="gate-arrow">→</span>
           </div>
 
-          <div
-            className="gate-card"
-            onClick={() => navigate('/planning')}
-            style={gateCardStyle}
-          >
+          {/* 🎯 Étape II : Registre d'Études avec sa classe dédiée */}
+          <div className="gate-card planning" onClick={() => navigate('/planning')}>
             <div className="gate-content">
               <span className="gate-number">II</span>
               <h3>Registre d'Études</h3>
@@ -228,37 +212,16 @@ export default function Dashboard() {
                 Ouvrir votre emploi du temps personnalisé et vérifier le statut de vos confirmations de cours.
               </p>
             </div>
-
             <span className="gate-arrow">→</span>
           </div>
 
+          {/* 🎯 Étape III : Bulletin de Pupitre épuré de tout style en ligne lourd */}
           <div
-            className="gate-card"
+            className={`gate-card bulletin ${hasNewNote ? 'badge-active' : ''}`}
             onClick={handleOpenBulletin}
-            style={{
-              ...gateCardStyle,
-              position: 'relative',
-              borderColor: hasNewNote ? '#d4af37' : undefined,
-              boxShadow: hasNewNote ? '0 0 0 1px rgba(212, 175, 55, 0.35)' : undefined,
-              backgroundImage: "linear-gradient(rgba(255,255,255,0.76), rgba(255,255,255,0.88)), url('/img/partition.jpg')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
           >
             {hasNewNote && (
-              <span
-                title="Nouvelle note disponible"
-                style={{
-                  position: 'absolute',
-                  top: '18px',
-                  right: '22px',
-                  width: '11px',
-                  height: '11px',
-                  borderRadius: '50%',
-                  background: '#d4af37',
-                  boxShadow: '0 0 0 4px rgba(212, 175, 55, 0.18)'
-                }}
-              />
+              <span title="Nouvelle note disponible" className="notification-dot-signature" />
             )}
 
             <div className="gate-content">

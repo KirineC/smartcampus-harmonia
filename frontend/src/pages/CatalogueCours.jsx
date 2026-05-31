@@ -9,7 +9,11 @@ export default function CatalogueCours() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [inscriptionLoading, setInscriptionLoading] = useState(null);
+  
+  // 🎯 Filtre de catégorie active
+  const [activeFilter, setActiveFilter] = useState('tous');
 
+  // Récupération de l'instrument majeur de l'élève connecté
   const userData = localStorage.getItem('user');
   const user = userData ? JSON.parse(userData) : null;
   const etudiantInstrument = user?.instrument_majeur || '';
@@ -121,7 +125,6 @@ export default function CatalogueCours() {
         border: '#d4af37'
       };
     }
-
     if (statutLower.includes('valid')) {
       return {
         label: '✅ Inscription acceptée',
@@ -130,7 +133,6 @@ export default function CatalogueCours() {
         border: '#137333'
       };
     }
-
     if (statutLower.includes('refus')) {
       return {
         label: '❌ Demande refusée',
@@ -139,7 +141,6 @@ export default function CatalogueCours() {
         border: '#b3261e'
       };
     }
-
     return {
       label: statut,
       background: '#f1f1f1',
@@ -148,10 +149,26 @@ export default function CatalogueCours() {
     };
   };
 
-  const coursFiltres = cours.filter(c =>
-    c.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.prof_nom.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Logique de filtrage combinée
+  const coursFiltres = cours.filter(c => {
+    const matchSearch = 
+      c.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.prof_nom.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (!matchSearch) return false;
+
+    if (activeFilter === 'autorises') {
+      return !c.instrument_requis || (etudiantInstrument && c.instrument_requis.toLowerCase() === etudiantInstrument.toLowerCase());
+    }
+    if (activeFilter === 'individuel') {
+      return c.type_cours.toLowerCase().includes('individuel');
+    }
+    if (activeFilter === 'ensemble') {
+      return c.type_cours.toLowerCase().includes('ensemble') || c.type_cours.toLowerCase().includes('collectif');
+    }
+
+    return true; 
+  });
 
   if (loading) {
     return (
@@ -186,6 +203,33 @@ export default function CatalogueCours() {
         />
       </div>
 
+      <div className="filter-tabs-zone">
+        <button 
+          className={`filter-tab-btn ${activeFilter === 'tous' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('tous')}
+        >
+          Tous les cours ({cours.length})
+        </button>
+        <button 
+          className={`filter-tab-btn ${activeFilter === 'autorises' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('autorises')}
+        >
+          🎻 Mon Pupitre Uniquement
+        </button>
+        <button 
+          className={`filter-tab-btn ${activeFilter === 'individuel' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('individuel')}
+        >
+          🎼 Cours Individuels
+        </button>
+        <button 
+          className={`filter-tab-btn ${activeFilter === 'ensemble' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('ensemble')}
+        >
+          👥 Ensembles & Collectifs
+        </button>
+      </div>
+
       <div className="courses-grid">
         {coursFiltres.map((c) => {
           const inscription = getInscriptionPourCours(c.id);
@@ -196,9 +240,9 @@ export default function CatalogueCours() {
           const estValidee = inscription?.statut_inscription?.toLowerCase().includes('valid');
           const estRefusee = inscription?.statut_inscription?.toLowerCase().includes('refus');
 
-          const isWrongInstrument =
-            c.instrument_requis &&
-            etudiantInstrument &&
+          const isWrongInstrument = 
+            c.instrument_requis && 
+            etudiantInstrument && 
             c.instrument_requis.toLowerCase() !== etudiantInstrument.toLowerCase();
 
           return (
@@ -252,9 +296,17 @@ export default function CatalogueCours() {
                 </div>
               </div>
 
-              <div className="course-card-actions">
-                <div className="course-capacity">
-                  👥 Places occupées : <strong>{c.places_occupees} / {c.capacite_max}</strong>
+              <div>
+                <div
+                  className="course-info"
+                  style={{
+                    marginTop: '15px',
+                    borderTop: '1px dashed #ddd',
+                    paddingTop: '10px',
+                    marginBottom: '10px'
+                  }}
+                >
+                  👥 Places occupées : <strong>{c.places_occupees || 0} / {c.capacite_max}</strong>
                 </div>
 
                 {estEnAttente && (
@@ -268,7 +320,7 @@ export default function CatalogueCours() {
                 )}
 
                 {estValidee && (
-                  <div className="register-button accepted-inscription-badge">
+                  <div className="register-button accepted-inscription-badge" style={{ textAlign: 'center', backgroundColor: '#137333', color: '#fff', padding: '12px 0', borderRadius: '2px', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                     Inscription acceptée
                   </div>
                 )}
@@ -287,11 +339,7 @@ export default function CatalogueCours() {
                     className={`register-button ${isWrongInstrument ? 'disabled-rock' : ''}`}
                     onClick={() => !isWrongInstrument && handleInscription(c.id)}
                     disabled={coursComplet || isWrongInstrument || inscriptionLoading === c.id}
-                    title={
-                      isWrongInstrument
-                        ? `Ce cours est exclusivement réservé au pupitre [${c.instrument_requis}]`
-                        : ''
-                    }
+                    title={isWrongInstrument ? `Ce cours est exclusivement réservé au pupitre [${c.instrument_requis}]` : ''}
                   >
                     {isWrongInstrument
                       ? `Réservé aux ${c.instrument_requis}s`

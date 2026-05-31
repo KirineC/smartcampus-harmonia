@@ -76,6 +76,7 @@ function annulerDemandeEnAttente($pdo, $etudiant_id, $cours_id) {
 // GET : consulter les inscriptions de l'étudiant
 // ============================================================
 if ($method === 'GET') {
+    // 🎯 FUSION RÉUSSIE : On garde les colonnes classiques ET tes ajouts pour les profs
     $stmt = $pdo->prepare("
         SELECT
             i.*,
@@ -85,12 +86,16 @@ if ($method === 'GET') {
             c.jour_semaine,
             c.heure_debut,
             c.heure_fin,
-            s.nom_salle,
-            c.statut AS cours_statut
+            s.nom_salle, 
+            c.statut AS cours_statut,
+            u_prof.nom AS prof_nom,        -- 🎻 Rapatrié avec succès !
+            u_prof.prenom AS prof_prenom   -- 🎻 Rapatrié avec succès !
         FROM inscriptions i
         JOIN cours c ON i.cours_id = c.id
         LEFT JOIN salles s ON c.salle_id = s.id
         JOIN etudiants e ON i.etudiant_id = e.id
+        LEFT JOIN enseignants prof ON c.enseignant_id = prof.id 
+        LEFT JOIN utilisateurs u_prof ON prof.utilisateur_id = u_prof.id 
         WHERE e.utilisateur_id = ?
         ORDER BY c.jour_semaine, c.heure_debut
     ");

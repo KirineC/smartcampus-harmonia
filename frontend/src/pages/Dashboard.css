@@ -1,5 +1,9 @@
+/* ==========================================================================
+   CONSERVATOIRE HARMONIA — ACCUEIL ET TABLEAU DE BORD GLOBAL
+   ========================================================================== */
+
 .dashboard-wrapper {
-  background-color: #f4f2ed; /* soit #fcfbfa soit  */
+  background-color: #f4f2ed;
   color: #111111;
   min-height: 100vh;
   padding: 60px 40px;
@@ -25,7 +29,10 @@
   font-size: 16px;
 }
 
-/* Grille des fonctionnalités */
+/* ==========================================================================
+   📊 GRILLE DES FONCTIONNALITÉS SUPÉRIEURES (dashboard-grid)
+   ========================================================================== */
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -41,11 +48,10 @@
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
 }
 
-/* Le relief magique au survol */
 .dashboard-card:hover {
-  transform: translateY(-4px); /* La carte monte légèrement */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04); /* L'ombre s'adoucit et s'étend */
-  border-color: #d4af37; /* Les contours s'illuminent discrètement en Or */
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+  border-color: #d4af37;
 }
 
 .card-title {
@@ -64,7 +70,7 @@
   margin-bottom: 25px;
 }
 
-/* Barre de progression (Métronome) */
+/* Barre de progression (Pratique Hebdomadaire) */
 .progress-container {
   background-color: #f0eee9;
   height: 4px;
@@ -74,7 +80,7 @@
 }
 
 .progress-bar {
-  background-color: #d4af37; /* L'Or du Conservatoire */
+  background-color: #d4af37;
   height: 100%;
   transition: width 0.5s ease;
 }
@@ -87,7 +93,7 @@
   color: #555;
 }
 
-/* Programme du jour mini */
+/* Bloc Programme du Jour mini */
 .mini-program-row {
   display: flex;
   gap: 20px;
@@ -115,7 +121,10 @@
   margin: 0;
 }
 
-/* Les Portes de Navigation */
+/* ==========================================================================
+   🚪 PORTES DE NAVIGATION / ESPACE ADM (gates-grid)
+   ========================================================================== */
+
 .section-subtitle {
   font-size: 14px;
   font-family: sans-serif;
@@ -181,7 +190,7 @@
   transform: translateX(5px);
 }
 
-/* Bouton d'ajout de pratique */
+/* Boutons & Éléments d'Action */
 .add-practice-btn {
   background: transparent;
   border: 1px solid #d4af37;
@@ -201,14 +210,17 @@
   color: #ffffff;
 }
 
-/* Structure du Modal de Luxe */
+/* ==========================================================================
+   🏛️ MODAL DE LUXE (Formulaires de saisie)
+   ========================================================================== */
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4); /* Fond assombri subtil */
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -217,7 +229,7 @@
 
 .modal-content {
   background: #ffffff;
-  border-top: 4px solid #d4af37; /* Ligne d'or signature */
+  border-top: 4px solid #d4af37;
   padding: 35px;
   width: 100%;
   max-width: 450px;
@@ -251,7 +263,6 @@
   color: #111;
 }
 
-/* Formulaire interne du Modal */
 .form-group-chic {
   margin-bottom: 18px;
   display: flex;
@@ -286,7 +297,6 @@
   background-color: #ffffff;
 }
 
-/* Bouton Soumettre */
 .submit-practice-btn {
   width: 100%;
   background-color: #111111;
@@ -313,50 +323,78 @@
 }
 
 /* ==========================================================================
-   FONDS TEXTURÉS COMPLETS POUR LES CARTES (FILIGRANES DE LUXE)
+   🖼️ ARCHITECTURE DES FILIGRANES DE LUXE (CENTRALISATION CSS)
    ========================================================================== */
 
-/* Applique un positionnement relatif pour l'overlay sur toutes les cartes */
+/* Sécurité de superposition pour l'effet de transparence */
 .dashboard-card, .gate-card {
-  position: relative;
-  overflow: hidden; /* Empêche tout dépassement */
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-/* 1. Carte Métronome (1ère de la grille) */
-.dashboard-grid .dashboard-card:nth-child(1) {
+/* 1. Carte Métronome (Haut Gauche) */
+.dashboard-card.metronome-box {
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
-    url('/img/metronome.jpg');
-  background-size: cover; /* Occupe tout l'espace */
-  background-position: center;
-  background-repeat: no-repeat;
+    linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.96)), 
+    url('/img/metronome.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 }
 
-/* 2. Carte Programme (2ème de la grille) */
-.dashboard-grid .dashboard-card:nth-child(2) {
+/* 2. Carte Programme du jour (Haut Droite) */
+.dashboard-card.daily-program {
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
-    url('/img/programme.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+    linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.96)), 
+    url('/img/programme.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 }
 
-/* 3. Porte Catalogue (1ère des démarches) */
-.gates-grid .gate-card:nth-child(1) {
+/* 3. Porte I : Grand Catalogue */
+.gate-card.catalogue {
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
-    url('/img/catalogue.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+    linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.96)), 
+    url('/img/catalogue.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 }
-/* 4. Porte Planning (2ème des démarches) */
-.gates-grid .gate-card:nth-child(2) {
+
+/* 4. Porte II : Registre d'Études (Planning) */
+.gate-card.planning {
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.96)), 
-    url('/img/planning.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+    linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.96)), 
+    url('/img/planning.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* 5. Porte III : Bulletin de Pupitre */
+.gate-card.bulletin {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.96)), 
+    url('/img/partition.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+/* Pastille d'Or de notification sur le Bulletin de Pupitre */
+.notification-dot-signature {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #d4af37;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.18);
+}
+
+/* Changement de bordure dynamique si une note arrive */
+.gate-card.bulletin.badge-active {
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35) !important;
 }

@@ -7,24 +7,25 @@ class Cours {
     }
     
     public function getAll() {
+    // On sélectionne toutes les infos du cours, le nom du prof, le nom de la salle
+    // ET on compte le nombre d'inscriptions qui ont le statut 'Validée'
         $stmt = $this->pdo->prepare("
             SELECT 
-                c.*, 
-                c.statut, -- 👈 On s'assure de bien récupérer le statut ici
-                u.prenom, 
-                u.nom AS prof_nom, 
-                s.nom_salle
-
-                -- ... (tes sous-requêtes SELECT COUNT(*) restent identiques) ...
-                
+                c.*,
+                u.nom AS prof_nom,
+                u.prenom,
+                s.nom_salle,
+                (SELECT COUNT(*) 
+                FROM inscriptions i 
+                WHERE i.cours_id = c.id 
+                AND i.statut_inscription = 'Validée') AS places_occupees
             FROM cours c
-            JOIN enseignants e ON c.enseignant_id = e.id
-            JOIN utilisateurs u ON e.utilisateur_id = u.id
-            JOIN salles s ON c.salle_id = s.id
-            WHERE c.statut = 'Actif' -- 👈 On ne prend que les cours vivants pour le catalogue
+            LEFT JOIN enseignants e ON c.enseignant_id = e.id
+            LEFT JOIN utilisateurs u ON e.utilisateur_id = u.id
+            LEFT JOIN salles s ON c.salle_id = s.id
+            WHERE c.statut = 'Actif'
             ORDER BY c.jour_semaine, c.heure_debut
         ");
-
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

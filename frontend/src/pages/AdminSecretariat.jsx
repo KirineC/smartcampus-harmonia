@@ -19,10 +19,22 @@ export default function AdminSecretariat() {
 
   const navigate = useNavigate();
 
+  // Formulaire pour les cours
   const [form, setForm] = useState({
     code_cours: '', titre: '', type_cours: 'Collectif', capacite_max: 20,
     enseignant_id: '', salle_id: '', jour_semaine: '1', heure_debut: '09:00',
     heure_fin: '10:30', semestre: '1', description: ''
+  });
+
+  // 🎯 NOUVEAU : State pour le formulaire de création de compte utilisateur
+  const [userForm, setUserForm] = useState({
+    email: '',
+    password: '',
+    role: 'etudiant', // par défaut
+    prenom: '',
+    nom: '',
+    filiere: 'Classique',
+    instrument_majeur: 'Piano'
   });
 
   useEffect(() => {
@@ -40,16 +52,16 @@ export default function AdminSecretariat() {
       setErrorMsg('');
       const response = await api.get('/index.php?admin_gestion=1');
       if (response.data && response.data.success) {
-        const listeProfs = response.data.enseignants || [];
-        const listeSalles = response.data.salles || [];
+        const listProfs = response.data.enseignants || [];
+        const listSalles = response.data.salles || [];
         setCours(response.data.cours || []);
-        setEnseignants(listeProfs);
-        setSalles(listeSalles);
+        setEnseignants(listProfs);
+        setSalles(listSalles);
         
         setForm(prev => ({
           ...prev,
-          ...(listeProfs.length > 0 ? { enseignant_id: listeProfs[0].id } : {}),
-          ...(listeSalles.length > 0 ? { salle_id: listeSalles[0].id } : {})
+          ...(listProfs.length > 0 ? { enseignant_id: listProfs[0].id } : {}),
+          ...(listSalles.length > 0 ? { salle_id: listSalles[0].id } : {})
         }));
       }
     } catch (err) {
@@ -69,7 +81,13 @@ export default function AdminSecretariat() {
     setCoursEnEdition(prev => ({ ...prev, [name]: value }));
   };
 
-  // ✍️ Soumission Création (POST)
+  // 🎯 NOUVEAU : Gérer les changements du formulaire utilisateur
+  const handleUserInputChange = (e) => {
+    const { name, value } = e.target;
+    setUserForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  // ✍️ Soumission Création Cours (POST)
   const handleCreerCours = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -78,7 +96,6 @@ export default function AdminSecretariat() {
     const salleSelectionnee = salles.find(s => String(s.id) === String(form.salle_id));
 
     if (salleSelectionnee) {
-      // ❌ CONFLIT 1 : Capacité Logistique
       const placesDemandees = parseInt(form.capacite_max, 10);
       const capaciteSalleMax = parseInt(salleSelectionnee.capacite_maximale, 10);
 
@@ -87,7 +104,6 @@ export default function AdminSecretariat() {
         return; 
       }
 
-      // 🎹 CONFLIT 2 : Acoustique (via le Nom de la Salle)
       const aBesoinDePiano = form.titre.toLowerCase().includes('piano');
       const estUneSallePiano = salleSelectionnee.nom_salle.toLowerCase().includes('piano');
 
@@ -114,7 +130,37 @@ export default function AdminSecretariat() {
     }
   };
 
-  // ✏️ Soumission Modification (POST avec action modifier)
+  // 🎯 NOUVEAU : Soumission Création Compte Utilisateur (POST)
+  const handleCreerUtilisateur = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+    setSubmitting(true);
+
+    try {
+      const response = await api.post('/index.php', {
+        action: 'creer_utilisateur',
+        admin_gestion: 1, // Permet à ton index.php de router vers admin_gestion.php
+        ...userForm
+      });
+
+      if (response.data && response.data.success) {
+        setSuccessMsg(`👤 Félicitations : ${response.data.message || "Le profil académique a été créé."}`);
+        // Reset du formulaire
+        setUserForm({
+          email: '', password: '', role: 'etudiant', prenom: '', nom: '', filiere: 'Classique', instrument_majeur: 'Piano'
+        });
+        await chargerHubAdmin(); // Rafraîchit les listes au cas où c'est un prof
+        setActiveTab('liste');
+      }
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || "Erreur lors de l'inscription du profil.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ✏️ Soumission Modification
   const handleModifierCours = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -123,7 +169,6 @@ export default function AdminSecretariat() {
     const salleSelectionnee = salles.find(s => String(s.id) === String(coursEnEdition.salle_id));
 
     if (salleSelectionnee) {
-      // ❌ CONFLIT 1 : Capacité Logistique en Édition
       const placesDemandees = parseInt(coursEnEdition.capacite_max, 10);
       const capaciteSalleMax = parseInt(salleSelectionnee.capacite_maximale, 10);
 
@@ -132,7 +177,6 @@ export default function AdminSecretariat() {
         return;
       }
 
-      // 🎹 CONFLIT 2 : Acoustique en Édition
       const aBesoinDePiano = coursEnEdition.titre.toLowerCase().includes('piano');
       const estUneSallePiano = salleSelectionnee.nom_salle.toLowerCase().includes('piano');
 
@@ -161,7 +205,7 @@ export default function AdminSecretariat() {
     }
   };
 
-  // 🗑️ Suppression (DELETE - Révocation Douce)
+  // 🗑️ Suppression
   const handleSupprimerCours = async (coursId) => {
     if (!window.confirm("Fermer cette chaire ? Cela archivera le cours et révoquera les inscriptions élèves liées !")) return;
     try {
@@ -194,12 +238,20 @@ export default function AdminSecretariat() {
         {errorMsg && <div style={{ marginTop: '20px', padding: '12px', background: '#fdecea', border: '1px solid #b3261e', color: '#b3261e' }}>{errorMsg}</div>}
       </section>
 
-      <div className="teacher-tabs" style={{ marginBottom: '30px', borderBottom: '1px solid #eae9e4' }}>
-        <button className={`tab-btn ${activeTab === 'liste' ? 'active' : ''}`} onClick={() => setActiveTab('liste')}>🎻 Chaires Actives ({cours.length})</button>
-        <button className={`tab-btn ${activeTab === 'creer' ? 'active' : ''}`} onClick={() => setActiveTab('creer')}>✍️ Ouvrir un Enseignement</button>
+      {/* 🎯 Barre d'onglets mise à jour avec le 3ème bouton */}
+      <div className="teacher-tabs" style={{ marginBottom: '30px', borderBottom: '1px solid #eae9e4', display: 'flex', gap: '10px' }}>
+        <button className={`tab-btn ${activeTab === 'liste' ? 'active' : ''}`} onClick={() => { setActiveTab('liste'); setErrorMsg(''); setSuccessMsg(''); }}>
+          🎻 Chaires Actives ({cours.length})
+        </button>
+        <button className={`tab-btn ${activeTab === 'creer' ? 'active' : ''}`} onClick={() => { setActiveTab('creer'); setErrorMsg(''); setSuccessMsg(''); }}>
+          ✍️ Ouvrir un Enseignement
+        </button>
+        <button className={`tab-btn ${activeTab === 'membres' ? 'active' : ''}`} onClick={() => { setActiveTab('membres'); setErrorMsg(''); setSuccessMsg(''); }}>
+          👤 Inscrire un Membre
+        </button>
       </div>
 
-      {/* 🎻 VUE LISTE */}
+      {/* 🎻 VUE 1 : LISTE DES COURS */}
       {activeTab === 'liste' && (
         <div className="teacher-card animate-fade">
           <table className="chic-table">
@@ -213,13 +265,11 @@ export default function AdminSecretariat() {
             </thead>
             <tbody>
               {cours.map(c => (
-                /* 🎯 MODIFICATION ICI : On grise la ligne si le cours est Révoqué */
                 <tr key={c.id} style={c.statut === 'Révoqué' ? { opacity: 0.5, backgroundColor: '#f9f9f9' } : {}}>
                   <td>
                     <span style={{ fontSize: '11px', color: '#a39264', fontWeight: '600' }}>{c.code_cours}</span>
                     <strong style={{ display: 'block', fontSize: '15px' }}>{c.titre}</strong>
                     <span style={{ fontSize: '12px', color: '#777' }}>{c.type_cours} • {c.capacite_max} pl.</span>
-                    {/* 🎯 MODIFICATION ICI : On affiche un badge d'avertissement rouge discret */}
                     {c.statut === 'Révoqué' && (
                       <span style={{ display: 'inline-block', marginTop: '5px', padding: '2px 6px', background: '#b3261e', color: '#fff', fontSize: '10px', fontWeight: 'bold', fontFamily: 'sans-serif', borderRadius: '3px' }}>CHAIRE RÉVOQUÉE</span>
                     )}
@@ -232,7 +282,6 @@ export default function AdminSecretariat() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      {/* 🎯 MODIFICATION ICI : On n'affiche les boutons d'actions QUE si le cours n'est pas encore Révoqué */}
                       {c.statut !== 'Révoqué' ? (
                         <>
                           <button className="minimal-btn" style={{ padding: '6px 12px', fontSize: '11px', background: '#a39264' }} onClick={() => setCoursEnEdition(c)}>✏️ Éditer</button>
@@ -250,7 +299,7 @@ export default function AdminSecretariat() {
         </div>
       )}
 
-      {/* ✍️ FORMULAIRE CRÉATION */}
+      {/* ✍️ VUE 2 : CRÉATION COURS */}
       {activeTab === 'creer' && (
         <div className="teacher-card animate-fade" style={{ maxWidth: '700px' }}>
           <form onSubmit={handleCreerCours} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -298,6 +347,74 @@ export default function AdminSecretariat() {
               </div>
             </div>
             <button type="submit" disabled={submitting} className="teacher-btn-dark" style={{ height: '45px' }}>{submitting ? "Saisie en cours..." : "Ouvrir la Chaire"}</button>
+          </form>
+        </div>
+      )}
+
+      {/* 🎯 NOUVELLE VUE 3 : FORMULAIRE D'INSCRIPTION UTILISATEUR DYNAMIQUE */}
+      {activeTab === 'membres' && (
+        <div className="teacher-card animate-fade" style={{ maxWidth: '700px' }}>
+          <h3 style={{ fontFamily: 'Georgia, serif', fontWeight: 'normal', marginBottom: '20px', color: '#111' }}>Enrôlement d'un nouvel Académicien ou Enseignant</h3>
+          
+          <form onSubmit={handleCreerUtilisateur} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div>
+                <label>Prénom</label>
+                <input type="text" name="prenom" value={userForm.prenom} onChange={handleUserInputChange} required className="chic-note-input" style={{ width:'100%' }} placeholder="ex: Sophie"/>
+              </div>
+              <div>
+                <label>Nom de Famille</label>
+                <input type="text" name="nom" value={userForm.nom} onChange={handleUserInputChange} required className="chic-note-input" style={{ width:'100%' }} placeholder="ex: Martin"/>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
+              <div>
+                <label>Adresse Courriel Institutionnelle</label>
+                <input type="email" name="email" value={userForm.email} onChange={handleUserInputChange} required className="chic-note-input" style={{ width:'100%' }} placeholder="ex: s.martin@harmonia.fr"/>
+              </div>
+              <div>
+                <label>Rang / Rôle</label>
+                <select name="role" value={userForm.role} onChange={handleUserInputChange} className="chic-note-input" style={{ width:'100%', height:'42px', background:'#fff' }}>
+                  <option value="etudiant">Étudiant</option>
+                  <option value="enseignant">Enseignant (Maître)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label>Mot de Passe Temporaire</label>
+              <input type="password" name="password" value={userForm.password} onChange={handleUserInputChange} required className="chic-note-input" style={{ width:'100%' }} placeholder="••••••••"/>
+            </div>
+
+            {/* 🎻 CLAUSE DYNAMIQUE : Affichée UNIQUEMENT pour les Étudiants */}
+            {userForm.role === 'etudiant' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', padding: '20px', background: '#faf9f5', border: '1px dashed #d4af37', borderRadius: '2px' }} className="animate-fade">
+                <div>
+                  <label>Filière d'Étude</label>
+                  <select name="filiere" value={userForm.filiere} onChange={handleUserInputChange} className="chic-note-input" style={{ width:'100%', height:'42px', background:'#fff' }}>
+                    <option value="Classique">Musique Classique</option>
+                    <option value="Baroque">Musique Baroque</option>
+                    <option value="Jazz">Jazz & Improvisation</option>
+                    <option value="Contemporain">Musique Contemporaine</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Instrument Majeur (Pupitre)</label>
+                  <select name="instrument_majeur" value={userForm.instrument_majeur} onChange={handleUserInputChange} className="chic-note-input" style={{ width:'100%', height:'42px', background:'#fff' }}>
+                    <option value="Piano">Piano</option>
+                    <option value="Violon">Violon</option>
+                    <option value="Violoncelle">Violoncelle</option>
+                    <option value="Flûte Traversière">Flûte Traversière</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            <button type="submit" disabled={submitting} className="teacher-btn-dark" style={{ height: '45px', marginTop: '10px' }}>
+              {submitting ? "Enregistrement au grand livre..." : "Inscrire au Registre de l'Académie"}
+            </button>
           </form>
         </div>
       )}

@@ -24,11 +24,13 @@ function getEtudiantConnecte($pdo) {
 }
 
 function annulerDemandeEnAttente($pdo, $etudiant_id, $cours_id) {
+    // 1. On récupère les infos de l'inscription ET de l'étudiant connecté pour cibler la bonne notif
     $stmtCheck = $pdo->prepare("
-        SELECT id, statut_inscription
-        FROM inscriptions
-        WHERE etudiant_id = ?
-        AND cours_id = ?
+        SELECT i.id, i.statut_inscription, c.titre AS nom_cours, e.utilisateur_id AS eleve_user_id, c.enseignant_id
+        FROM inscriptions i
+        JOIN cours c ON i.cours_id = c.id
+        JOIN etudiants e ON i.etudiant_id = e.id
+        WHERE i.etudiant_id = ? AND i.cours_id = ?
         LIMIT 1
     ");
 
@@ -36,40 +38,57 @@ function annulerDemandeEnAttente($pdo, $etudiant_id, $cours_id) {
     $inscription = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
     if (!$inscription) {
-        return [
-            'success' => false,
-            'error' => 'Aucune demande trouvée pour ce cours.'
-        ];
+        return ['success' => false, 'error' => 'Aucune demande trouvée pour ce cours.'];
     }
 
     $statut = trim($inscription['statut_inscription']);
 
     if ($statut === 'Validée') {
-        return [
-            'success' => false,
-            'error' => 'Une inscription déjà acceptée ne peut pas être annulée depuis le catalogue.'
-        ];
+        return ['success' => false, 'error' => 'Une inscription déjà acceptée ne peut pas être annulée depuis le catalogue.'];
     }
 
     if ($statut !== 'En attente') {
-        return [
-            'success' => false,
-            'error' => 'Cette inscription ne peut plus être annulée.'
-        ];
+        return ['success' => false, 'error' => 'Cette inscription ne peut plus être annulée.'];
     }
 
-    $stmtDelete = $pdo->prepare("
-        DELETE FROM inscriptions
-        WHERE id = ?
-        LIMIT 1
-    ");
+    try {
+        $pdo->beginTransaction();
 
-    $stmtDelete->execute([$inscription['id']]);
+        // 2. On supprime l'inscription
+        $stmtDelete = $pdo->prepare("DELETE FROM inscriptions WHERE id = ?");
+        $stmtDelete->execute([$inscription['id']]);
 
-    return [
-        'success' => true,
-        'message' => 'Demande d’inscription annulée avec succès.'
-    ];
+        // 3. 🎯 LA MAGIE : On va chercher l'ID 'utilisateur' du prof pour nettoyer sa boîte aux lettres
+        $stmtProfUser = $pdo->prepare("SELECT utilisateur_id FROM enseignants WHERE id = ?");
+        $stmtProfUser->execute([$inscription['enseignant_id']]);
+        $prof_user_id = $stmtProfUser->fetchColumn();
+
+        if ($prof_user_id) {
+            // On supprime la notification qui contient le nom du cours (avec un LIKE)
+            $txtRecherche = "%concerne le cours de '" . $inscription['nom_cours'] . "'%"; 
+            // Ou plus simple, on cherche le texte de notification standard qu'on avait codé :
+            $txtRechercheAlternatif = "%souhaite s'inscrire à votre cours de '" . $inscription['nom_cours'] . "'.";
+
+            $stmtDeleteNotif = $pdo->prepare("
+                DELETE FROM notifications 
+                WHERE utilisateur_id = ? 
+                AND message LIKE ?
+                AND lu = 0
+            ");
+            $stmtDeleteNotif->execute([$prof_user_id, $txtRechercheAlternatif]);
+        }
+
+        $pdo->commit();
+
+        return [
+            'success' => true,
+            'message' => 'Demande d’inscription annulée et notification prof nettoyée.'
+        ];
+
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        return ['success' => false, 'error' => 'Erreur lors de l\'annulation : ' . $e->getMessage()];
+    }
 }
 
 // ============================================================

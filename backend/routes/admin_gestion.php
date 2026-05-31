@@ -47,10 +47,80 @@ if ($method === 'GET') {
 }
 
 // ============================================================
-// ✍️ ACTION 2 : OUVERTURE (POST) OU MODIFICATION D'UNE CHAIRE
+// ✍️ ACTION 2 : ACTIONS D'ÉCRITURE ADMIN (POST)
 // ============================================================
 if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
+
+    // ------------------------------------------------------------
+    // 👤 NOUVELLE ACTION : CRÉATION D'UN COMPTE (ÉTUDIANT OU PROF)
+    // ------------------------------------------------------------
+    if (isset($data['action']) && $data['action'] === 'creer_utilisateur') {
+        if (empty($data['email']) || empty($data['password']) || empty($data['role']) || empty($data['prenom']) || empty($data['nom'])) {
+            http_response_code(400);
+            echo json_encode(["success" => false, "error" => "Données d'identité incomplètes."]);
+            exit;
+        }
+
+        $email = htmlspecialchars(trim($data['email']));
+        $password = password_hash($data['password'], PASSWORD_BCRYPT);
+        $role = htmlspecialchars($data['role']); // 'etudiant' ou 'enseignant'
+        $prenom = htmlspecialchars(trim($data['prenom']));
+        $nom = htmlspecialchars(trim($data['nom']));
+
+        // Vérification de l'unicité de l'email
+        $stmtCheckEmail = $pdo->prepare("SELECT id FROM utilisateurs WHERE courriel = ?");
+        $stmtCheckEmail->execute([$email]);
+        if ($stmtCheckEmail->rowCount() > 0) {
+            http_response_code(409);
+            echo json_encode(["success" => false, "error" => "Cette adresse courriel est déjà enregistrée à l'Académie."]);
+            exit;
+        }
+
+        try {
+            $pdo->beginTransaction();
+
+            // 1. Insertion dans la table centrale utilisateurs
+            $stmtUser = $pdo->prepare("
+                INSERT INTO utilisateurs (courriel, mot_de_passe_chiffre, role, prenom, nom)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $stmtUser->execute([$email, $password, $role, $prenom, $nom]);
+            $newUserId = $pdo->lastInsertId();
+
+            // 2. Traitement spécifique selon le rôle choisi par le secrétariat
+            if ($role === 'etudiant') {
+                $filiere = htmlspecialchars($data['filiere'] ?? 'Classique');
+                $instrument = htmlspecialchars($data['instrument_majeur'] ?? 'Piano');
+
+                $numeroEtudiant = 'E2026-' . rand(1000, 9999);
+
+                // On ajoute 'numero_etudiant' dans la requête SQL
+                $stmtEtudiant = $pdo->prepare("
+                    INSERT INTO etudiants (utilisateur_id, filiere, instrument_majeur, numero_etudiant)
+                    VALUES (?, ?, ?, ?)
+                ");
+                $stmtEtudiant->execute([$newUserId, $filiere, $instrument, $numeroEtudiant]);
+
+            } else if ($role === 'enseignant') {
+                // Création du profil de l'enseignant
+                $stmtEnseignant = $pdo->prepare("
+                    INSERT INTO enseignants (utilisateur_id)
+                    VALUES (?)
+                ");
+                $stmtEnseignant->execute([$newUserId]);
+            }
+
+            $pdo->commit();
+            echo json_encode(["success" => true, "message" => "Le compte de " . $prenom . " " . $nom . " a été inscrit au registre officiel."]);
+
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            http_response_code(500);
+            echo json_encode(["success" => false, "error" => "Erreur lors de la génération du profil : " . $e->getMessage()]);
+        }
+        exit;
+    }
 
     // 🔄 CAS A : MODIFICATION D'UN COURS EXISTANT
     if (isset($data['action']) && $data['action'] === 'modifier_cours') {
@@ -74,7 +144,6 @@ if ($method === 'POST') {
         $description = htmlspecialchars($data['description'] ?? '');
 
         try {
-            // 🔎 VERIFICATION CONFLITS ÉDITION : Nettoyée avec salle_id et enseignant_id
             $sqlConflit = "
                 SELECT titre FROM cours 
                 WHERE jour_semaine = :jour 
@@ -92,7 +161,6 @@ if ($method === 'POST') {
                 exit;
             }
 
-            // 💾 MISE À JOUR : Nettoyée avec enseignant_id et salle_id
             $sqlUpdate = "
                 UPDATE cours 
                 SET code_cours = :code, titre = :titre, type_cours = :type, capacite_max = :capacite, 
@@ -139,7 +207,6 @@ if ($method === 'POST') {
     $description = isset($data['description']) ? htmlspecialchars($data['description']) : '';
 
     try {
-        // 🔎 VERIFICATION CONFLITS CRÉATION : Nettoyée avec salle_id et enseignant_id
         $sqlConflit = "
             SELECT titre, code_cours FROM cours 
             WHERE jour_semaine = :jour 
@@ -156,7 +223,6 @@ if ($method === 'POST') {
             exit;
         }
 
-        // 💾 INSERTION : Nettoyée avec enseignant_id et salle_id
         $sqlInsert = "
             INSERT INTO cours (code_cours, titre, type_cours, capacite_max, enseignant_id, salle_id, jour_semaine, heure_debut, heure_fin, semestre, description)
             VALUES (:code, :titre, :type, :capacite, :enseignant_id, :salle_id, :jour, :debut, :fin, :semestre, :description)

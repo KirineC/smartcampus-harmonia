@@ -184,6 +184,18 @@ elseif (
     include __DIR__ . '/routes/enseignant_notes.php';
 }
 
+// ------------------------------------------------------------
+// 👤 Actions Admin (Création de compte étudiant/enseignant)
+// ------------------------------------------------------------
+elseif (
+    $isIndex 
+    && $method === 'POST' 
+    && isset($data['action']) 
+    && $data['action'] === 'creer_utilisateur'
+) {
+    include __DIR__ . '/routes/admin_gestion.php';
+}
+
 // Actions Admin (Créer ou modifier un cours)
 elseif (
     $isIndex 

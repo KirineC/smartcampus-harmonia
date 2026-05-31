@@ -35,7 +35,7 @@ if ($method === 'GET') {
     }
 
     try {
-        // 1. 🎻 Liste des élèves (Requête nettoyée et sécurisée avec c.statut)
+        // 1. Liste des élèves, demandes, notes et cours du professeur connecté
         $stmt = $pdo->prepare("
             SELECT 
                 i.id AS inscription_id,
@@ -52,9 +52,15 @@ if ($method === 'GET') {
                 c.heure_debut,
                 c.heure_fin,
                 c.capacite_max,
-                (SELECT COUNT(*) FROM inscriptions WHERE cours_id = i.cours_id AND statut_inscription = 'Validée') AS inscrits_actifs,
+                c.statut AS cours_statut,
+                (
+                    SELECT COUNT(*) 
+                    FROM inscriptions 
+                    WHERE cours_id = i.cours_id 
+                    AND statut_inscription = 'Validée'
+                ) AS inscrits_actifs,
                 n.valeur_note AS note,
-                c.statut AS cours_statut -- 🎯 C'est ici qu'on l'injecte proprement !
+                n.est_valide AS note_validee
             FROM inscriptions i
             JOIN etudiants e ON i.etudiant_id = e.id
             JOIN utilisateurs u_eleve ON e.utilisateur_id = u_eleve.id
@@ -72,60 +78,82 @@ if ($method === 'GET') {
                 u_eleve.nom,
                 u_eleve.prenom
         ");
+
         $stmt->execute([$prof_utilisateur_id]);
         $listeEleves = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // 2. 📊 CALCUL DYNAMIQUE DES STATISTIQUES DE LA CHAIRE
-        // Taux de validation
-        $sqlTaux = "SELECT 
-                        COUNT(CASE WHEN i.statut_inscription = 'Validée' THEN 1 END) as valides,
-                        COUNT(i.id) as total
-                    FROM inscriptions i
-                    JOIN cours c ON i.cours_id = c.id
-                    JOIN enseignants prof ON c.enseignant_id = prof.id
-                    WHERE prof.utilisateur_id = ?";
+        // 2. Taux de validation
+        $sqlTaux = "
+            SELECT 
+                COUNT(CASE WHEN i.statut_inscription = 'Validée' THEN 1 END) AS valides,
+                COUNT(i.id) AS total
+            FROM inscriptions i
+            JOIN cours c ON i.cours_id = c.id
+            JOIN enseignants prof ON c.enseignant_id = prof.id
+            WHERE prof.utilisateur_id = ?
+        ";
+
         $stmtTaux = $pdo->prepare($sqlTaux);
         $stmtTaux->execute([$prof_utilisateur_id]);
         $resTaux = $stmtTaux->fetch(PDO::FETCH_ASSOC);
-        $tauxValidation = $resTaux['total'] > 0 ? round(($resTaux['valides'] / $resTaux['total']) * 100) : 0;
 
-        // Moyenne générale & Taux de complétion des notes
-        $sqlNotes = "SELECT 
-                        AVG(n.valeur_note) as moyenne,
-                        COUNT(n.id) as notes_saisies,
-                        COUNT(CASE WHEN i.statut_inscription = 'Validée' THEN 1 END) as total_valides
-                     FROM inscriptions i
-                     JOIN cours c ON i.cours_id = c.id
-                     JOIN enseignants prof ON c.enseignant_id = prof.id
-                     LEFT JOIN notes n ON n.inscription_id = i.id
-                     WHERE prof.utilisateur_id = ?";
+        $tauxValidation = $resTaux['total'] > 0
+            ? round(($resTaux['valides'] / $resTaux['total']) * 100)
+            : 0;
+
+        // 3. Moyenne générale et taux de complétion des notes
+        $sqlNotes = "
+            SELECT 
+                AVG(CASE WHEN n.est_valide = 1 THEN n.valeur_note END) AS moyenne,
+                COUNT(CASE WHEN n.est_valide = 1 THEN n.id END) AS notes_saisies,
+                COUNT(CASE WHEN i.statut_inscription = 'Validée' THEN 1 END) AS total_valides
+            FROM inscriptions i
+            JOIN cours c ON i.cours_id = c.id
+            JOIN enseignants prof ON c.enseignant_id = prof.id
+            LEFT JOIN notes n ON n.inscription_id = i.id
+            WHERE prof.utilisateur_id = ?
+        ";
+
         $stmtNotes = $pdo->prepare($sqlNotes);
         $stmtNotes->execute([$prof_utilisateur_id]);
         $resNotes = $stmtNotes->fetch(PDO::FETCH_ASSOC);
-        $moyenneClasse = $resNotes['moyenne'] !== null ? round($resNotes['moyenne'], 2) : null;
-        $completionNotes = $resNotes['total_valides'] > 0 ? round(($resNotes['notes_saisies'] / $resNotes['total_valides']) * 100) : 0;
 
-        // Major de promotion
-        $sqlMajor = "SELECT u.prenom, u.nom, n.valeur_note
-                     FROM notes n
-                     JOIN inscriptions i ON n.inscription_id = i.id
-                     JOIN etudiants e ON i.etudiant_id = e.id
-                     JOIN utilisateurs u ON e.utilisateur_id = u.id
-                     JOIN cours c ON i.cours_id = c.id
-                     JOIN enseignants prof ON c.enseignant_id = prof.id
-                     WHERE prof.utilisateur_id = ?
-                     ORDER BY n.valeur_note DESC, u.nom ASC
-                     LIMIT 1";
+        $moyenneClasse = $resNotes['moyenne'] !== null
+            ? round($resNotes['moyenne'], 2)
+            : null;
+
+        $completionNotes = $resNotes['total_valides'] > 0
+            ? round(($resNotes['notes_saisies'] / $resNotes['total_valides']) * 100)
+            : 0;
+
+        // 4. Major de promotion, uniquement avec les notes validées
+        $sqlMajor = "
+            SELECT u.prenom, u.nom, n.valeur_note
+            FROM notes n
+            JOIN inscriptions i ON n.inscription_id = i.id
+            JOIN etudiants e ON i.etudiant_id = e.id
+            JOIN utilisateurs u ON e.utilisateur_id = u.id
+            JOIN cours c ON i.cours_id = c.id
+            JOIN enseignants prof ON c.enseignant_id = prof.id
+            WHERE prof.utilisateur_id = ?
+            AND n.est_valide = 1
+            ORDER BY n.valeur_note DESC, u.nom ASC
+            LIMIT 1
+        ";
+
         $stmtMajor = $pdo->prepare($sqlMajor);
         $stmtMajor->execute([$prof_utilisateur_id]);
         $resMajor = $stmtMajor->fetch(PDO::FETCH_ASSOC);
-        $majorName = $resMajor ? $resMajor['prenom'] . " " . $resMajor['nom'] . " (" . $resMajor['valeur_note'] . "/20)" : "Aucune note";
 
-        // Réponse combinée épurée
+        $majorName = $resMajor
+            ? $resMajor['prenom'] . " " . $resMajor['nom'] . " (" . $resMajor['valeur_note'] . "/20)"
+            : "Aucune note validée";
+
         echo json_encode([
             'success' => true,
             'etudiants' => $listeEleves,
             'stats' => [
+                'tauxValidation' => $tauxValidation,
                 'moyenneClasse' => $moyenneClasse,
                 'completionNotes' => $completionNotes,
                 'major' => $majorName
